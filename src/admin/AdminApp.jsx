@@ -25,12 +25,16 @@ import {
   Check,
   ChevronDown,
   ClipboardList,
+  Eye,
+  EyeOff,
+  GraduationCap,
   LayoutDashboard,
   Loader2,
   LogOut,
   Mail,
   Menu,
   MessageSquare,
+  Phone,
   Plus,
   RefreshCw,
   ShieldCheck,
@@ -46,6 +50,8 @@ const navigation = [
   { id: 'overview', label: 'Overview', path: '/admin', icon: LayoutDashboard },
   { id: 'messages', label: 'Messages', path: '/admin/messages', icon: MessageSquare },
   { id: 'newsletter', label: 'Newsletter', path: '/admin/newsletter', icon: Mail },
+  { id: 'training-programs', label: 'Training', path: '/admin/training', icon: GraduationCap },
+  { id: 'training-requests', label: 'Training requests', path: '/admin/training-requests', icon: ClipboardList },
   { id: 'projects', label: 'Projects', path: '/admin/projects', icon: Briefcase },
   { id: 'services', label: 'Services', path: '/admin/services', icon: Wrench },
 ];
@@ -307,6 +313,8 @@ function AdminWorkspace({ user, onSignOut, mobileNavOpen, setMobileNavOpen }) {
           {activeSection === 'overview' && <Overview />}
           {activeSection === 'messages' && <MessagesPage />}
           {activeSection === 'newsletter' && <NewsletterPage />}
+          {activeSection === 'training-programs' && <TrainingProgramsPage />}
+          {activeSection === 'training-requests' && <TrainingRequestsPage />}
           {activeSection === 'projects' && <CollectionManager collectionName="projects" title="Projects" description="Manage the work and products shown in the public portfolio." defaults={defaultProjects} />}
           {activeSection === 'services' && <CollectionManager collectionName="services" title="Services" description="Manage the services and capabilities shown on the public site." defaults={defaultServices} />}
         </div>
@@ -530,6 +538,374 @@ function MessagesPage() {
         )}
         <p className="admin-table__privacy"><ShieldCheck size={15} /> Contact messages are private and read-only in this workspace.</p>
       </section>
+    </>
+  );
+}
+
+const trainingStatusOptions = {
+  enquiry: [
+    { value: 'new', label: 'New' },
+    { value: 'contacted', label: 'Contacted' },
+    { value: 'closed', label: 'Closed' },
+  ],
+  enrollment: [
+    { value: 'pending', label: 'Pending review' },
+    { value: 'approved', label: 'Approved' },
+    { value: 'waitlisted', label: 'Waitlisted' },
+    { value: 'declined', label: 'Declined' },
+  ],
+};
+
+const initialTrainingValues = {
+  title: '',
+  description: '',
+  startDate: '',
+  endDate: '',
+  schedule: '',
+  location: '',
+  deliveryMode: 'in_person',
+  fee: '',
+  published: false,
+};
+
+const trainingDateLabel = (record) => {
+  const date = record.startDate ? new Date(`${record.startDate}T00:00:00`) : null;
+  return date && !Number.isNaN(date.getTime())
+    ? date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+    : 'Date not set';
+};
+
+function TrainingProgramsPage() {
+  const [state, setState] = useState({ status: 'loading', records: [], error: '' });
+  const [editing, setEditing] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState({ type: '', message: '' });
+  const [search, setSearch] = useState('');
+  const titleRef = useRef(null);
+  const returnFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!db) {
+      setState({ status: 'error', records: [], error: 'Firebase is not configured.' });
+      return undefined;
+    }
+
+    return onSnapshot(collection(db, 'trainingAnnouncements'), (snapshot) => {
+      const records = snapshot.docs
+        .map((item) => ({ ...item.data(), id: item.id }))
+        .sort((a, b) => String(a.startDate || '').localeCompare(String(b.startDate || '')));
+      setState({ status: records.length ? 'ready' : 'empty', records, error: '' });
+    }, (error) => setState({ status: 'error', records: [], error: dataErrorMessage(error, 'load training announcements') }));
+  }, []);
+
+  useEffect(() => {
+    if (!editing) {
+      returnFocusRef.current?.focus?.();
+      returnFocusRef.current = null;
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => titleRef.current?.focus(), 0);
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !saving) setEditing(null);
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [editing, saving]);
+
+  const filteredRecords = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return term
+      ? state.records.filter((record) => [record.title, record.description, record.location].some((value) => String(value || '').toLowerCase().includes(term)))
+      : state.records;
+  }, [search, state.records]);
+
+  const openEditor = (record = null) => {
+    returnFocusRef.current = document.activeElement;
+    setNotice({ type: '', message: '' });
+    setEditing({
+      id: record?.id || null,
+      values: record ? {
+        title: record.title || '',
+        description: record.description || '',
+        startDate: record.startDate || '',
+        endDate: record.endDate || '',
+        schedule: record.schedule || '',
+        location: record.location || '',
+        deliveryMode: record.deliveryMode || 'in_person',
+        fee: record.fee || '',
+        published: record.published === true,
+      } : { ...initialTrainingValues },
+    });
+  };
+
+  const updateValue = (field, value) => setEditing((current) => ({
+    ...current,
+    values: { ...current.values, [field]: value },
+  }));
+
+  const saveProgram = async (event) => {
+    event.preventDefault();
+    const values = editing.values;
+    if (!values.title.trim() || values.title.trim().length > 140) {
+      setNotice({ type: 'error', message: 'Enter a programme title of 1–140 characters.' });
+      return;
+    }
+    if (!values.description.trim() || values.description.trim().length > 2000) {
+      setNotice({ type: 'error', message: 'Enter programme details of 1–2,000 characters.' });
+      return;
+    }
+    if (!values.startDate || (values.endDate && values.endDate < values.startDate)) {
+      setNotice({ type: 'error', message: 'Enter a valid start date and ensure the end date is not before it.' });
+      return;
+    }
+    if (values.schedule.trim().length > 160 || values.location.trim().length > 180 || values.fee.trim().length > 100) {
+      setNotice({ type: 'error', message: 'Schedule, location, or fee details exceed their allowed length.' });
+      return;
+    }
+
+    const payload = {
+      title: values.title.trim(),
+      description: values.description.trim(),
+      startDate: values.startDate,
+      endDate: values.endDate,
+      schedule: values.schedule.trim(),
+      location: values.location.trim(),
+      deliveryMode: values.deliveryMode,
+      fee: values.fee.trim(),
+      published: values.published === true,
+    };
+
+    setSaving(true);
+    setNotice({ type: '', message: '' });
+    try {
+      if (editing.id) {
+        await updateDoc(doc(db, 'trainingAnnouncements', editing.id), { ...payload, updatedAt: serverTimestamp() });
+      } else {
+        await addDoc(collection(db, 'trainingAnnouncements'), { ...payload, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+      }
+      setEditing(null);
+      setNotice({ type: 'success', message: `Training programme ${editing.id ? 'updated' : 'created'} successfully.` });
+    } catch (error) {
+      setNotice({ type: 'error', message: dataErrorMessage(error, `${editing.id ? 'update' : 'create'} this training programme`) });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePublished = async (record) => {
+    setNotice({ type: '', message: '' });
+    try {
+      await updateDoc(doc(db, 'trainingAnnouncements', record.id), {
+        published: !record.published,
+        updatedAt: serverTimestamp(),
+      });
+      setNotice({ type: 'success', message: `“${record.title}” ${record.published ? 'unpublished' : 'published'}.` });
+    } catch (error) {
+      setNotice({ type: 'error', message: dataErrorMessage(error, `${record.published ? 'unpublish' : 'publish'} this training programme`) });
+    }
+  };
+
+  return (
+    <>
+      <PageHeading
+        eyebrow="PUBLIC CONTENT"
+        title="Training announcements"
+        description="Create programmes, publish announcements, and manage visibility on the public training page."
+        action={<button className="admin-button admin-button--primary" type="button" onClick={() => openEditor()}><Plus size={17} />Add programme</button>}
+      />
+      {notice.message && <div className={`admin-alert ${notice.type === 'error' ? 'admin-alert--error' : 'admin-alert--success'}`} role={notice.type === 'error' ? 'alert' : 'status'}>{notice.type === 'error' ? <AlertCircle size={18} /> : <Check size={18} />}{notice.message}</div>}
+      <section className="admin-panel admin-manager" aria-label="Training announcements">
+        <div className="admin-manager__toolbar">
+          <div><p className="admin-kicker">PROGRAMMES</p><h2>{state.records.length} {state.records.length === 1 ? 'programme' : 'programmes'}</h2></div>
+          <label className="admin-search"><span className="sr-only">Search training programmes</span><input type="search" placeholder="Search programmes…" value={search} onChange={(event) => setSearch(event.target.value)} /><span>⌕</span></label>
+        </div>
+        {state.status === 'loading' && <div className="admin-alert" role="status"><Loader2 className="admin-spin" size={18} />Loading programmes…</div>}
+        {state.status === 'error' && <div className="admin-alert admin-alert--error" role="alert"><AlertCircle size={18} />{state.error}</div>}
+        {state.status === 'empty' && <div className="admin-empty admin-empty--compact"><GraduationCap size={24} /><strong>No training programmes yet</strong><span>Add a programme and publish it when it is ready to appear on the website.</span></div>}
+        {state.status === 'ready' && (
+          filteredRecords.length ? (
+            <div className="admin-training-program-list">
+              {filteredRecords.map((record) => (
+                <article className="admin-training-program" key={record.id}>
+                  <span className="admin-training-program__icon"><GraduationCap size={20} aria-hidden="true" /></span>
+                  <div className="admin-training-program__copy">
+                    <div className="admin-training-program__title"><h3>{record.title}</h3><span className={`admin-training-badge${record.published ? ' is-published' : ''}`}>{record.published ? 'Published' : 'Draft'}</span></div>
+                    <p>{record.description}</p>
+                    <span>{trainingDateLabel(record)}{record.location ? ` · ${record.location}` : ''}</span>
+                  </div>
+                  <div className="admin-training-program__actions">
+                    <button className="admin-button admin-button--small" type="button" onClick={() => openEditor(record)}>Edit</button>
+                    <button className="admin-button admin-button--small admin-button--quiet" type="button" onClick={() => togglePublished(record)}>{record.published ? <><EyeOff size={14} />Unpublish</> : <><Eye size={14} />Publish</>}</button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : <div className="admin-empty admin-empty--compact"><ClipboardList size={21} /><strong>No matches</strong><span>Try a different search term.</span></div>
+        )}
+      </section>
+      <p className="admin-data-footnote"><span><i />Public programmes are live</span> Draft programmes are private until published. Existing enquiries and enrollment requests remain available if a programme is unpublished.</p>
+
+      {editing && (
+        <div className="admin-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setEditing(null); }}>
+          <section className="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="training-editor-heading">
+            <div className="admin-dialog__heading"><div><p className="admin-kicker">{editing.id ? 'EDIT PROGRAMME' : 'NEW PROGRAMME'}</p><h2 id="training-editor-heading">{editing.id ? 'Update programme' : 'Add programme'}</h2></div><button className="admin-icon-button" type="button" aria-label="Close editor" onClick={() => setEditing(null)} disabled={saving}><X size={19} /></button></div>
+            {notice.type === 'error' && <div className="admin-alert admin-alert--error" role="alert"><AlertCircle size={17} />{notice.message}</div>}
+            <form className="admin-editor-form" onSubmit={saveProgram}>
+              <label className="admin-field"><span>Programme title <i>*</i></span><input ref={titleRef} maxLength={140} value={editing.values.title} onChange={(event) => updateValue('title', event.target.value)} required /></label>
+              <label className="admin-field"><span>Programme details <i>*</i></span><textarea rows={4} maxLength={2000} value={editing.values.description} onChange={(event) => updateValue('description', event.target.value)} required /></label>
+              <div className="admin-field-row">
+                <label className="admin-field"><span>Start date <i>*</i></span><input type="date" value={editing.values.startDate} onChange={(event) => updateValue('startDate', event.target.value)} required /></label>
+                <label className="admin-field"><span>End date</span><input type="date" min={editing.values.startDate || undefined} value={editing.values.endDate} onChange={(event) => updateValue('endDate', event.target.value)} /></label>
+              </div>
+              <div className="admin-field-row">
+                <label className="admin-field"><span>Delivery format</span><select value={editing.values.deliveryMode} onChange={(event) => updateValue('deliveryMode', event.target.value)}><option value="in_person">In person</option><option value="online">Online</option><option value="hybrid">Hybrid</option></select></label>
+                <label className="admin-field"><span>Fee</span><input maxLength={100} value={editing.values.fee} onChange={(event) => updateValue('fee', event.target.value)} placeholder="e.g. MWK 150,000 or Free" /></label>
+              </div>
+              <label className="admin-field"><span>Schedule</span><input maxLength={160} value={editing.values.schedule} onChange={(event) => updateValue('schedule', event.target.value)} placeholder="e.g. Saturdays, 9:00 AM–1:00 PM" /></label>
+              <label className="admin-field"><span>Location or meeting details</span><input maxLength={180} value={editing.values.location} onChange={(event) => updateValue('location', event.target.value)} placeholder="City, venue, or online platform" /></label>
+              <label className="admin-checkbox-field">
+                <input type="checkbox" checked={editing.values.published} onChange={(event) => updateValue('published', event.target.checked)} />
+                <span><strong>Publish this announcement</strong><small>Published programmes appear on the public Training page with Enquire and Enrol actions.</small></span>
+              </label>
+              <div className="admin-dialog__actions">
+                <button className="admin-button admin-button--quiet" type="button" disabled={saving} onClick={() => setEditing(null)}>Cancel</button>
+                <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? <Loader2 className="admin-spin" size={16} /> : <Check size={16} />}{saving ? 'Saving…' : 'Save programme'}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+    </>
+  );
+}
+
+function TrainingRequestsPage() {
+  const [state, setState] = useState({ status: 'loading', records: [], error: '' });
+  const [filter, setFilter] = useState('all');
+  const [review, setReview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState({ type: '', message: '' });
+
+  useEffect(() => {
+    if (!db) {
+      setState({ status: 'error', records: [], error: 'Firebase is not configured.' });
+      return undefined;
+    }
+
+    return onSnapshot(collection(db, 'trainingRequests'), (snapshot) => {
+      const records = snapshot.docs
+        .map((item) => ({ ...item.data(), id: item.id }))
+        .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0));
+      setState({ status: records.length ? 'ready' : 'empty', records, error: '' });
+    }, (error) => setState({ status: 'error', records: [], error: dataErrorMessage(error, 'load training enquiries and enrolments') }));
+  }, []);
+
+  const filteredRecords = filter === 'all' ? state.records : state.records.filter((record) => record.type === filter);
+  const openReview = (record) => {
+    setNotice({ type: '', message: '' });
+    setReview({
+      record,
+      status: record.status || (record.type === 'enquiry' ? 'new' : 'pending'),
+      adminNotes: record.adminNotes || '',
+    });
+  };
+
+  const saveReview = async (event) => {
+    event.preventDefault();
+    if (!review || !trainingStatusOptions[review.record.type]?.some((option) => option.value === review.status)) {
+      setNotice({ type: 'error', message: 'Choose a valid status for this request.' });
+      return;
+    }
+    if (review.adminNotes.length > 2000) {
+      setNotice({ type: 'error', message: 'Private notes must be 2,000 characters or fewer.' });
+      return;
+    }
+
+    setSaving(true);
+    setNotice({ type: '', message: '' });
+    try {
+      await updateDoc(doc(db, 'trainingRequests', review.record.id), {
+        status: review.status,
+        adminNotes: review.adminNotes.trim(),
+        updatedAt: serverTimestamp(),
+      });
+      setReview(null);
+      setNotice({ type: 'success', message: 'Training request updated.' });
+    } catch (error) {
+      setNotice({ type: 'error', message: dataErrorMessage(error, 'update this training request') });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <PageHeading
+        eyebrow="LEARNER FOLLOW-UP"
+        title="Training requests"
+        description="Review public enquiries and enrollment requests. Statuses and private notes are visible only to administrators."
+        action={<label className="admin-select-wrap"><span className="sr-only">Filter training requests</span><select value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All requests</option><option value="enquiry">Enquiries</option><option value="enrollment">Enrollment requests</option></select><ChevronDown size={16} aria-hidden="true" /></label>}
+      />
+      {notice.message && <div className={`admin-alert ${notice.type === 'error' ? 'admin-alert--error' : 'admin-alert--success'}`} role={notice.type === 'error' ? 'alert' : 'status'}>{notice.type === 'error' ? <AlertCircle size={18} /> : <Check size={18} />}{notice.message}</div>}
+      <section className="admin-panel admin-training-requests" aria-label="Training requests">
+        <div className="admin-panel__heading"><div><p className="admin-kicker">SUBMISSIONS</p><h2>{filteredRecords.length} {filteredRecords.length === 1 ? 'request' : 'requests'}</h2></div></div>
+        {state.status === 'loading' && <div className="admin-alert" role="status"><Loader2 className="admin-spin" size={18} />Loading training requests…</div>}
+        {state.status === 'error' && <div className="admin-alert admin-alert--error" role="alert"><AlertCircle size={18} />{state.error}</div>}
+        {state.status === 'empty' && <div className="admin-empty"><ClipboardList size={24} /><strong>No training requests yet</strong><span>Enquiries and enrollment requests will appear here when visitors submit a form.</span></div>}
+        {state.status === 'ready' && filteredRecords.length === 0 && <div className="admin-empty admin-empty--compact"><ClipboardList size={21} /><strong>No matching requests</strong><span>Try a different request type.</span></div>}
+        {state.status === 'ready' && filteredRecords.length > 0 && (
+          <div className="admin-training-request-list">
+            {filteredRecords.map((record) => {
+              const isEnquiry = record.type === 'enquiry';
+              const currentStatus = record.status || (isEnquiry ? 'new' : 'pending');
+              return (
+                <article className="admin-training-request" key={record.id}>
+                  <div className="admin-training-request__main">
+                    <div className="admin-training-request__top">
+                      <span className={`admin-training-badge${isEnquiry ? '' : ' is-enrollment'}`}>{isEnquiry ? 'Enquiry' : 'Enrollment request'}</span>
+                      <span className={`admin-training-badge admin-training-badge--status is-${currentStatus}`}>{trainingStatusOptions[record.type]?.find((option) => option.value === currentStatus)?.label || currentStatus}</span>
+                      <time>{record.createdAt?.toDate ? record.createdAt.toDate().toLocaleString() : 'Pending timestamp'}</time>
+                    </div>
+                    <h3>{record.name || 'Unnamed applicant'} <span>· {record.trainingTitle || 'Training programme'}</span></h3>
+                    <div className="admin-training-request__contacts">
+                      <a href={`mailto:${record.email}`}><Mail size={14} aria-hidden="true" />{record.email || 'No email'}</a>
+                      <a href={`tel:${String(record.phone || '').replace(/[^\d+]/g, '')}`}><Phone size={14} aria-hidden="true" />{record.phone || 'No phone'}</a>
+                    </div>
+                    {record.note && <p className="admin-training-request__note">{record.note}</p>}
+                  </div>
+                  <button className="admin-button admin-button--small" type="button" onClick={() => openReview(record)}>Review</button>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      {review && (
+        <div className="admin-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !saving) setReview(null); }}>
+          <section className="admin-dialog" role="dialog" aria-modal="true" aria-labelledby="training-request-review-heading">
+            <div className="admin-dialog__heading"><div><p className="admin-kicker">{review.record.type === 'enquiry' ? 'TRAINING ENQUIRY' : 'ENROLLMENT REQUEST'}</p><h2 id="training-request-review-heading">Review submission</h2></div><button className="admin-icon-button" type="button" aria-label="Close review" onClick={() => setReview(null)} disabled={saving}><X size={19} /></button></div>
+            <div className="admin-training-review">
+              <strong>{review.record.trainingTitle}</strong>
+              <span>{review.record.name} · <a href={`mailto:${review.record.email}`}>{review.record.email}</a> · <a href={`tel:${String(review.record.phone || '').replace(/[^\d+]/g, '')}`}>{review.record.phone}</a></span>
+              {review.record.note && <p>{review.record.note}</p>}
+            </div>
+            {notice.type === 'error' && <div className="admin-alert admin-alert--error" role="alert"><AlertCircle size={17} />{notice.message}</div>}
+            <form className="admin-editor-form" onSubmit={saveReview}>
+              <label className="admin-field"><span>Request status</span><select value={review.status} onChange={(event) => setReview((current) => ({ ...current, status: event.target.value }))}>{(trainingStatusOptions[review.record.type] || []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+              <label className="admin-field"><span>Private notes <small>Only administrators can see these</small></span><textarea rows={4} maxLength={2000} value={review.adminNotes} onChange={(event) => setReview((current) => ({ ...current, adminNotes: event.target.value }))} placeholder="Record follow-up details or decisions…" /></label>
+              <div className="admin-dialog__actions">
+                <button className="admin-button admin-button--quiet" type="button" disabled={saving} onClick={() => setReview(null)}>Cancel</button>
+                <button className="admin-button admin-button--primary" type="submit" disabled={saving}>{saving ? <Loader2 className="admin-spin" size={16} /> : <Check size={16} />}{saving ? 'Saving…' : 'Save update'}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </>
   );
 }

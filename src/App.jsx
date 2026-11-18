@@ -4,6 +4,7 @@ import { recordPageView } from './analytics';
 import Hero from './components/Hero';
 import About from './components/About';
 import Services from './components/Services';
+import TrainingPage from './components/TrainingPage';
 import Portfolio from './components/Portfolio';
 import Contact, { FloatingWhatsApp } from './components/Contact';
 import Footer from './components/Footer';
@@ -34,7 +35,7 @@ function AnalyticsTracker() {
   return null;
 }
 
-function CorporateSite() {
+function CorporateSite({ training = false }) {
   const [activeModal, setActiveModal] = useState(null);
   const activeModalRef = useRef(activeModal);
   activeModalRef.current = activeModal;
@@ -44,12 +45,14 @@ function CorporateSite() {
   const handleModalClose = useCallback(() => setActiveModal(null), []);
 
   useEffect(() => {
+    if (training) return undefined;
+
     const timer = window.setTimeout(() => {
       if (activeModalRef.current === null) setActiveModal('newsletter');
     }, 120000);
 
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [training]);
 
   return (
     <div className="sds-site">
@@ -57,15 +60,21 @@ function CorporateSite() {
       <RegistrationModal isOpen={activeModal === 'project'} onClose={handleModalClose} />
       <NewsletterModal isOpen={activeModal === 'newsletter'} onClose={handleModalClose} />
       <main>
-        <Hero onGetStarted={handleGetStarted} />
-        <About />
-        <Services />
-        <Industries />
-        <Portfolio />
-        <Approach />
-        <Innovation />
-        <Contact />
-        <Newsletter onSubscribe={handleNewsletterOpen} />
+        {training ? (
+          <TrainingPage />
+        ) : (
+          <>
+            <Hero onGetStarted={handleGetStarted} />
+            <About />
+            <Services />
+            <Industries />
+            <Portfolio />
+            <Approach />
+            <Innovation />
+            <Contact />
+            <Newsletter onSubscribe={handleNewsletterOpen} />
+          </>
+        )}
       </main>
       <Footer />
       <FloatingWhatsApp />
@@ -111,6 +120,7 @@ function App() {
       <AnalyticsTracker />
       <Routes>
         <Route path="/" element={<CorporateSite />} />
+        <Route path="/training" element={<CorporateSite training />} />
         <Route path="/portfolio/*" element={<PortfolioSite />} />
         <Route path="/admin/*" element={<AdminApp />} />
       </Routes>

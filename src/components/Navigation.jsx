@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import Logo from './Logo';
 
 const navLinks = [
   { name: 'Home', href: '#hero' },
   { name: 'Services', href: '#services' },
+  { name: 'Training', href: '/training' },
   { name: 'Industries', href: '#industries' },
   { name: 'Projects', href: '#projects' },
   { name: 'About', href: '#about' },
@@ -13,6 +15,7 @@ const navLinks = [
 ];
 
 const Navigation = ({ onGetStarted }) => {
+  const { pathname } = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const reduceMotion = useReducedMotion();
@@ -32,6 +35,7 @@ const Navigation = ({ onGetStarted }) => {
   }, []);
 
   const closeMenu = () => setIsMobileMenuOpen(false);
+  const resolveHref = (href) => href.startsWith('#') && pathname !== '/' ? `/${href}` : href;
 
   return (
     <motion.nav
@@ -42,14 +46,14 @@ const Navigation = ({ onGetStarted }) => {
       className={`sds-nav ${isScrolled ? 'sds-nav--scrolled' : ''}`}
     >
       <div className="sds-nav__inner">
-        <a className="sds-brand" href="#hero" onClick={closeMenu} aria-label="SpenFel Digital Systems home">
+        <a className="sds-brand" href={resolveHref('#hero')} onClick={closeMenu} aria-label="SpenFel Digital Systems home">
           <Logo size="sm" />
           <span className="sds-brand__name">SpenFel <b>Digital Systems</b></span>
         </a>
 
         <div className="sds-nav__desktop">
           {navLinks.map((link) => (
-            <a key={link.name} href={link.href} className="sds-nav__link">{link.name}</a>
+            <a key={link.name} href={resolveHref(link.href)} className="sds-nav__link">{link.name}</a>
           ))}
           <button className="sds-nav__cta" type="button" onClick={onGetStarted}>Let&apos;s talk <span aria-hidden="true">↗</span></button>
         </div>
@@ -77,7 +81,7 @@ const Navigation = ({ onGetStarted }) => {
           >
             <div className="sds-nav__mobile-inner">
               {navLinks.map((link) => (
-                <a key={link.name} href={link.href} className="sds-nav__mobile-link" onClick={closeMenu}>
+                <a key={link.name} href={resolveHref(link.href)} className="sds-nav__mobile-link" onClick={closeMenu}>
                   {link.name}<span aria-hidden="true">↗</span>
                 </a>
               ))}

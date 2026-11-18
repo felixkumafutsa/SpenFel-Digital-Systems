@@ -55,6 +55,55 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /trainingAnnouncements/{trainingId} {
+      allow get, list: if isAdmin() || resource.data.published == true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /trainingRequests/{requestId} {
+      allow create: if request.resource.data.keys().hasAll([
+          'trainingId', 'trainingTitle', 'type', 'name', 'email', 'phone', 'note', 'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'trainingId', 'trainingTitle', 'type', 'name', 'email', 'phone', 'note', 'createdAt'
+        ])
+        && request.resource.data.trainingId is string
+        && request.resource.data.trainingId.size() > 0
+        && request.resource.data.trainingId.size() <= 128
+        && exists(/databases/$(database)/documents/trainingAnnouncements/$(request.resource.data.trainingId))
+        && get(/databases/$(database)/documents/trainingAnnouncements/$(request.resource.data.trainingId)).data.published == true
+        && get(/databases/$(database)/documents/trainingAnnouncements/$(request.resource.data.trainingId)).data.title == request.resource.data.trainingTitle
+        && request.resource.data.trainingTitle is string
+        && request.resource.data.trainingTitle.size() > 0
+        && request.resource.data.trainingTitle.size() <= 140
+        && request.resource.data.type in ['enquiry', 'enrollment']
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.name.matches('.*\\S.*')
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.email.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^[0-9+(). -]{7,24}$')
+        && request.resource.data.phone.matches('.*[0-9].*')
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 2000
+        && request.resource.data.createdAt == request.time;
+      allow get, list: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'adminNotes', 'updatedAt'])
+        && request.resource.data.status is string
+        && (
+          (resource.data.type == 'enquiry' && request.resource.data.status in ['new', 'contacted', 'closed'])
+          || (resource.data.type == 'enrollment' && request.resource.data.status in ['pending', 'approved', 'waitlisted', 'declined'])
+        )
+        && request.resource.data.adminNotes is string
+        && request.resource.data.adminNotes.size() <= 2000
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     match /analytics/{eventId} {
       allow create: if request.auth == null
         && request.resource.data.keys().hasAll(['eventType', 'visitorId', 'pagePath', 'createdAt'])

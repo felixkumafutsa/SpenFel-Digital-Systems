@@ -1,13 +1,18 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import Logo from './Logo';
 
-const Footer = () => (
-  <footer className="sds-footer">
+const Footer = () => {
+  const { pathname } = useLocation();
+  const sectionHref = (section) => pathname === '/' ? `#${section}` : `/#${section}`;
+
+  return (
+    <footer className="sds-footer">
     <div className="sds-container">
       <div className="sds-footer__main">
         <div className="sds-footer__brand">
-          <a className="sds-brand" href="#hero" aria-label="SpenFel Digital Systems home">
+          <a className="sds-brand" href={sectionHref('hero')} aria-label="SpenFel Digital Systems home">
             <Logo size="sm" />
             <span className="sds-brand__name">SpenFel <b>Digital Systems</b></span>
           </a>
@@ -15,10 +20,11 @@ const Footer = () => (
         </div>
         <div className="sds-footer__column">
           <h2>Explore</h2>
-          <a href="#services">Services</a>
-          <a href="#industries">Industries</a>
-          <a href="#projects">Projects</a>
-          <a href="#about">About SDS</a>
+          <a href="/training">Training</a>
+          <a href={sectionHref('services')}>Services</a>
+          <a href={sectionHref('industries')}>Industries</a>
+          <a href={sectionHref('projects')}>Projects</a>
+          <a href={sectionHref('about')}>About SDS</a>
         </div>
         <div className="sds-footer__column">
           <h2>Get in touch</h2>
@@ -30,10 +36,11 @@ const Footer = () => (
       </div>
       <div className="sds-footer__bottom">
         <span>© {new Date().getFullYear()} SpenFel Digital Systems</span>
-        <a href="#hero">Back to top ↑</a>
+        <a href={sectionHref('hero')}>Back to top ↑</a>
       </div>
     </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 export default Footer;

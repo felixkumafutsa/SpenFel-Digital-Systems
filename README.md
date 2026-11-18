@@ -74,7 +74,7 @@ VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
 ```
 
-Set them in a local `.env.local` file and in the deployment platform's environment settings. Do not commit credentials or service-account keys. Without these settings, the public site uses its built-in projects and services, newsletter and contact message submissions report that saving is unavailable, and analytics are not recorded.
+Set them in a local `.env.local` file and in the deployment platform's environment settings. Do not commit credentials or service-account keys. Without these settings, the public site uses its built-in projects and services, newsletter and contact message submissions report that saving is unavailable, training announcements cannot be loaded, and analytics are not recorded.
 
 To enable the admin:
 
@@ -89,7 +89,9 @@ To enable the admin:
    The signed-in user can read only their own grant document. Admin privilege is checked in both the app and Firestore rules.
 4. Publish the repository's `firestore.rules` in Firebase Console → Firestore Database → Rules (or deploy it with an already-installed Firebase CLI).
 
-Public visitors may create only schema-validated newsletter subscription, contact message, and anonymous page-view documents; they cannot read those collections. Only active administrators may read subscriptions, contact messages, and analytics. Contact submissions appear in the read-only **Messages** section of `/admin`. Public projects and services are readable, but writes require an active administrator. If the managed `projects` or `services` collection has no documents, the public page clearly notes that it is showing built-in content. Importing the defaults is an explicit, one-time action in the corresponding admin screen; it does not silently replace records. If a configured public collection cannot be read, the site shows its fallback content with a visible diagnostic rather than treating the error as an empty collection.
+Public visitors may create only schema-validated newsletter subscription, contact message, training enquiry/enrollment request, and anonymous page-view documents; they cannot read those collections. Only active administrators may read subscriptions, contact messages, and analytics. Contact submissions appear in the read-only **Messages** section of `/admin`. Public projects and services are readable, but writes require an active administrator. If the managed `projects` or `services` collection has no documents, the public page clearly notes that it is showing built-in content. Importing the defaults is an explicit, one-time action in the corresponding admin screen; it does not silently replace records. If a configured public collection cannot be read, the site shows its fallback content with a visible diagnostic rather than treating the error as an empty collection.
+
+The public `/training` page displays only published announcements. In `/admin` → **Training**, administrators can create, edit, publish, and unpublish programmes. Each published programme accepts enquiries and enrollment requests; enrolling submits a request and does not confirm a place. In **Training requests**, administrators can mark enquiries as new/contacted/closed and enrollment requests as pending/approved/waitlisted/declined, and save private follow-up notes. Applicant details, statuses, and notes are readable only by administrators.
 
 Overview metrics count client-recorded public page views and distinct random browser IDs within the selected date range. They are anonymous estimates, not complete server-side traffic analytics. Ad blockers, offline visits, or storage restrictions may prevent events from being recorded.
 
