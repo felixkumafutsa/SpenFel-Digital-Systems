@@ -4,8 +4,14 @@ service firebase.storage {
   match /b/{bucket}/o {
     function isActiveAdmin() {
       return request.auth != null
-        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.active == true
-        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+        && (
+          firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.active == true
+          || firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.active == 'true'
+        )
+        && (
+          firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role == 'admin'
+          || firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role == 'Admin'
+        );
     }
 
     match /training-program-images/{trainingId}/{fileName} {

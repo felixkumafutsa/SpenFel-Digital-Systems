@@ -199,9 +199,10 @@ function AdminApp() {
     try {
       const adminSnapshot = await getDoc(doc(db, 'admins', user.uid));
       if (verificationId !== verificationIdRef.current) return;
-      const access = adminSnapshot.exists()
-        && adminSnapshot.data().active === true
-        && adminSnapshot.data().role === 'admin';
+      const data = adminSnapshot.data();
+      const isActive = data?.active === true || data?.active === 'true';
+      const isRoleAdmin = String(data?.role || '').trim().toLowerCase() === 'admin';
+      const access = adminSnapshot.exists() && isActive && isRoleAdmin;
       setAuthState({
         status: access ? 'authorized' : 'denied',
         user,

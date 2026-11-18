@@ -9,8 +9,14 @@ service cloud.firestore {
     function isAdmin() {
       return signedIn()
         && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true
-        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+        && (
+          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == true
+          || get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.active == 'true'
+        )
+        && (
+          get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'admin'
+          || get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'Admin'
+        );
     }
 
     match /admins/{uid} {
