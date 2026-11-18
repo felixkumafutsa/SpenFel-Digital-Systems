@@ -1,58 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight, ExternalLink, Pause, Play } from 'lucide-react';
-import { portfolioData } from '../portfolio/data/portfolioData';
 import useCardReveal from './useCardReveal';
-
-const productOrder = [
-  'technical-skills-and-innovation-lab',
-  'hospital-management-saas',
-  'intelligent-school-management-saas',
-  'saferide-malawi',
-  'learning-and-teaching-companion',
-];
-
-const projectTypes = {
-  'technical-skills-and-innovation-lab': 'Technical learning initiative',
-  'hospital-management-saas': 'Digital healthcare solution',
-  'intelligent-school-management-saas': 'Education platform',
-  'saferide-malawi': 'Mobility and safety product',
-  'learning-and-teaching-companion': 'Learning tool',
-  '1': 'Medical RFID system',
-  '2': 'Enterprise audit platform',
-  '3': 'Agricultural rental platform',
-  '5': 'Digital payments platform',
-  '6': 'Solar energy monitoring system',
-  '7': 'Smart waste management',
-  '8': 'IoT monitoring platform',
-  '9': 'Biometric attendance system',
-};
-
-const productCoverImages = {
-  'technical-skills-and-innovation-lab': '/portfolio/images/projects/cover-technical-skills-innovation-lab.png',
-  'hospital-management-saas': '/portfolio/images/projects/cover-hospital-management-saas.png',
-  'intelligent-school-management-saas': '/portfolio/images/projects/cover-intelligent-school-management-saas.png',
-  'saferide-malawi': '/portfolio/images/projects/cover-saferide-malawi.png',
-  'learning-and-teaching-companion': '/portfolio/images/projects/cover-learning-teaching-companion.png',
-  1: '/portfolio/images/projects/cover-medcard-rfid-system.png',
-  2: '/portfolio/images/projects/cover-auditsoft-enterprise.png',
-  3: '/portfolio/images/projects/cover-farm-inputs-rental-platform.png',
-  5: '/portfolio/images/projects/cover-spenfel-crypto.png',
-  6: '/portfolio/images/projects/cover-solar-monitoring-system.png',
-  7: '/portfolio/images/projects/cover-iot-smartbin-system.png',
-  8: '/portfolio/images/projects/cover-iot-monitoring-gateway.png',
-  9: '/portfolio/images/projects/cover-fingerprint-attendance-system.png',
-};
-
-const products = productOrder
-  .map((id) => portfolioData.projects.find((project) => project.id === id))
-  .filter(Boolean);
-const previousProjects = portfolioData.projects.slice(5);
-const projects = [...products, ...previousProjects].map((project) => ({
-    ...project,
-    image: productCoverImages[project.id] || project.image,
-    category: 'SpenFel product',
-    type: projectTypes[project.id],
-  }));
+import usePublicCollection from '../hooks/usePublicCollection';
+import { defaultProjects } from '../data/siteContent';
 
 function ProjectImage({ project, index }) {
   const [imageStatus, setImageStatus] = useState(project.image ? 'loading' : 'missing');
@@ -121,9 +71,9 @@ function ProjectImage({ project, index }) {
   );
 }
 
-function ProjectCard({ project, index, active, setSlideRef }) {
+function ProjectCard({ project, index, active, setSlideRef, projectCount }) {
   const hasDemo = Boolean(project.demo);
-  const isFeaturedProduct = productOrder.includes(project.id);
+  const isFeaturedProduct = project.isFeaturedProduct === true;
 
   return (
     <article
@@ -131,7 +81,7 @@ function ProjectCard({ project, index, active, setSlideRef }) {
       ref={setSlideRef}
       role="group"
       aria-roledescription="slide"
-      aria-label={`${index + 1} of ${projects.length}: ${project.title}`}
+      aria-label={`${index + 1} of ${projectCount}: ${project.title}`}
       aria-current={active ? 'true' : undefined}
       data-card-reveal
     >
@@ -162,6 +112,7 @@ function ProjectCard({ project, index, active, setSlideRef }) {
 
 const Portfolio = () => {
   const revealRef = useCardReveal();
+  const { records: projects, status } = usePublicCollection('projects', defaultProjects);
   const carouselRef = useRef(null);
   const slideRefs = useRef([]);
   const interactionTimerRef = useRef(null);
@@ -174,6 +125,11 @@ const Portfolio = () => {
   const [focusWithin, setFocusWithin] = useState(false);
   const [interactionPaused, setInteractionPaused] = useState(false);
   const [documentVisible, setDocumentVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
+  const contentNotice = status === 'error'
+    ? 'Managed projects could not be loaded. Showing built-in content; check Firebase connectivity and Firestore rules.'
+    : status === 'empty'
+      ? 'No managed projects have been added yet. Showing built-in content until an administrator imports or adds projects.'
+      : null;
 
   const scrollToSlide = (index) => {
     const carousel = carouselRef.current;
@@ -245,7 +201,7 @@ const Portfolio = () => {
       scrollToSlide((activeIndex + 1) % projects.length);
     }, 6200);
     return () => window.clearInterval(interval);
-  }, [activeIndex, autoPaused, documentVisible, focusWithin, interactionPaused, prefersReducedMotion]);
+  }, [activeIndex, autoPaused, documentVisible, focusWithin, interactionPaused, prefersReducedMotion, projects.length]);
 
   const handleScroll = () => {
     if (scrollFrameRef.current) window.cancelAnimationFrame(scrollFrameRef.current);
@@ -260,6 +216,10 @@ const Portfolio = () => {
     if (carouselRef.current?.contains(event.target)) setFocusWithin(true);
   };
 
+  useEffect(() => {
+    setActiveIndex((current) => Math.min(current, Math.max(0, projects.length - 1)));
+  }, [projects.length]);
+
   return (
     <section id="projects" className="sds-projects sds-section" ref={revealRef}>
       <div className="sds-container">
@@ -270,6 +230,8 @@ const Portfolio = () => {
           </div>
           <p>Digital products and systems spanning education, healthcare, mobility, payments and connected infrastructure.</p>
         </div>
+
+        {contentNotice && <p className="sds-content-diagnostic" role="status">{contentNotice}</p>}
 
         <div
           className="sds-project-carousel"
@@ -345,6 +307,7 @@ const Portfolio = () => {
                 index={index}
                 active={activeIndex === index}
                 setSlideRef={(element) => { slideRefs.current[index] = element; }}
+                projectCount={projects.length}
               />
             ))}
           </div>

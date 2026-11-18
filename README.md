@@ -59,7 +59,39 @@ Import this repository in Vercel and use the following project settings:
 - **Output Directory**: `dist`
 - **Install Command**: `npm install`
 
-The `vercel.json` rewrite supports direct visits and refreshes on client-side routes such as `/portfolio/blog`. No Vercel environment variables are required for the static site.
+The `vercel.json` rewrite supports direct visits and refreshes on client-side routes such as `/portfolio/blog`. Configure the Firebase environment variables below in Vercel to enable admin, newsletter storage, managed content, and analytics.
+
+## Firebase admin and managed content
+
+The private `/admin` workspace uses Firebase Authentication and Cloud Firestore. Firebase web configuration is read only from these Vite environment variables:
+
+```text
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+```
+
+Set them in a local `.env.local` file and in the deployment platform's environment settings. Do not commit credentials or service-account keys. Without these settings, the public site uses its built-in projects and services, newsletter and contact message submissions report that saving is unavailable, and analytics are not recorded.
+
+To enable the admin:
+
+1. Create a Firebase project and register a Web app. Copy its public web-app settings into the variables above. Create a Cloud Firestore database for the project.
+2. In Firebase Console → Authentication → Sign-in method, enable **Email/Password**. Create each administrator account from the console; the site does not offer public account creation.
+3. In Firestore, create an `admins/{AUTH_UID}` document for each approved user. Use the UID shown on that user's Firebase Authentication page and set:
+
+   ```json
+   { "active": true, "role": "admin" }
+   ```
+
+   The signed-in user can read only their own grant document. Admin privilege is checked in both the app and Firestore rules.
+4. Publish the repository's `firestore.rules` in Firebase Console → Firestore Database → Rules (or deploy it with an already-installed Firebase CLI).
+
+Public visitors may create only schema-validated newsletter subscription, contact message, and anonymous page-view documents; they cannot read those collections. Only active administrators may read subscriptions, contact messages, and analytics. Contact submissions appear in the read-only **Messages** section of `/admin`. Public projects and services are readable, but writes require an active administrator. If the managed `projects` or `services` collection has no documents, the public page clearly notes that it is showing built-in content. Importing the defaults is an explicit, one-time action in the corresponding admin screen; it does not silently replace records. If a configured public collection cannot be read, the site shows its fallback content with a visible diagnostic rather than treating the error as an empty collection.
+
+Overview metrics count client-recorded public page views and distinct random browser IDs within the selected date range. They are anonymous estimates, not complete server-side traffic analytics. Ad blockers, offline visits, or storage restrictions may prevent events from being recorded.
 
 ## Project Structure
 
@@ -101,7 +133,7 @@ mw265-website/
 
 - **Phone**: +265 997 473 256
 - **WhatsApp**: +265 889 887 486
-- **Email**: info@mw265.com
+- **Email**: support@spenfel.com
 - **Location**: Lilongwe, Malawi
 
 ## License
