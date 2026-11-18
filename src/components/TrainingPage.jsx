@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { addDoc, collection, onSnapshot, query, serverTimestamp, where } from 'firebase/firestore';
 import { AlertCircle, ArrowRight, CalendarDays, Clock3, Loader2, MapPin, Monitor, Send, Wallet, X } from 'lucide-react';
 import { db } from '../firebase';
+import { defaultTrainingPrograms } from '../data/siteContent';
 
 const deliveryLabels = {
   online: 'Online',
@@ -95,28 +96,153 @@ function TrainingRequestDialog({ program, type, onClose }) {
   );
 }
 
-function TrainingCard({ program, onRequest }) {
+function ProgramDetailsDialog({ program, onClose, onRequest }) {
+  const closeButtonRef = useRef(null);
+  const dialogRef = useRef(null);
+  const titleId = `training-program-title-${program.id}`;
+
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    closeButtonRef.current?.focus();
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+
+      const focusable = dialogRef.current?.querySelectorAll('button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])');
+      if (!focusable?.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, [onClose]);
+
+  const startDate = formatDate(program.startDate);
+  const endDate = formatDate(program.endDate);
+  const dateLabel = startDate && endDate && startDate !== endDate
+    ? `${startDate} – ${endDate}`
+    : startDate || 'Date to be announced';
+
+  return (
+    <div className="sds-training-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section ref={dialogRef} className="sds-training-dialog sds-training-details" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+        <div className="sds-training-dialog__heading">
+          <div>
+            <p className="sds-eyebrow sds-eyebrow--dark">PROGRAMME DETAILS</p>
+            <h2 id={titleId}>{program.title}</h2>
+          </div>
+          <button ref={closeButtonRef} type="button" className="sds-training-dialog__close" onClick={onClose} aria-label="Close programme details">
+            <X size={20} aria-hidden="true" />
+          </button>
+        </div>
+        {program.imageUrl ? (
+          <img className="sds-training-details__image" src={program.imageUrl} alt="" />
+        ) : (
+          <div className="sds-training-details__image sds-training-card__image--fallback" aria-hidden="true"><Monitor size={34} /><span>SPENFEL TRAINING</span></div>
+        )}
+        <p className="sds-training-details__description">{program.description}</p>
+        <dl className="sds-training-card__details sds-training-details__facts">
+          <div><dt><CalendarDays size={15} aria-hidden="true" /> Dates</dt><dd>{dateLabel}</dd></div>
+          {program.schedule && <div><dt><Clock3 size={15} aria-hidden="true" /> Schedule</dt><dd>{program.schedule}</dd></div>}
+          {program.location && <div><dt><MapPin size={15} aria-hidden="true" /> Location</dt><dd>{program.location}</dd></div>}
+          <div><dt><Monitor size={15} aria-hidden="true" /> Delivery</dt><dd>{deliveryLabels[program.deliveryMode] || 'Training'}</dd></div>
+          <div><dt><Wallet size={15} aria-hidden="true" /> Fee</dt><dd>{program.fee || 'Contact us for details'}</dd></div>
+        </dl>
+        <div className="sds-training-details__actions">
+          <button type="button" className="sds-button sds-training-card__button--outline" onClick={() => onRequest(program, 'enquiry')}>Enquire <ArrowRight size={16} aria-hidden="true" /></button>
+          <button type="button" className="sds-button sds-button--green" onClick={() => onRequest(program, 'enrollment')}>Enroll <ArrowRight size={16} aria-hidden="true" /></button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TrainingCard({ program, onDetails, onRequest }) {
   const startDate = formatDate(program.startDate);
   const endDate = formatDate(program.endDate);
   const dateLabel = startDate && endDate && startDate !== endDate ? `${startDate} – ${endDate}` : startDate || 'Date to be announced';
 
+  const handleCardClick = (event) => {
+    if (event.target.closest('button.sds-training-card__action-btn, a')) return;
+    onDetails(program);
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      if (event.target.closest('button.sds-training-card__action-btn, a')) return;
+      event.preventDefault();
+      onDetails(program);
+    }
+  };
+
   return (
-    <article className="sds-training-card">
+    <article
+      className="sds-training-card"
+      role="button"
+      tabIndex={0}
+      aria-haspopup="dialog"
+      aria-label={`View programme details for ${program.title}`}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+    >
+      <div className="sds-training-card__image-wrap">
+        {program.imageUrl ? (
+          <img className="sds-training-card__image" src={program.imageUrl} alt={program.title} loading="lazy" />
+        ) : (
+          <div className="sds-training-card__image sds-training-card__image--fallback" aria-hidden="true">
+            <Monitor size={28} />
+            <span>SPENFEL TRAINING</span>
+          </div>
+        )}
+        <div className="sds-training-card__details-link" aria-hidden="true">
+          <span>View programme</span>
+          <ArrowRight size={14} />
+        </div>
+      </div>
       <div className="sds-training-card__top">
         <span className="sds-training-card__tag">TRAINING PROGRAMME</span>
         <span className="sds-training-card__delivery">{deliveryLabels[program.deliveryMode] || 'Training'}</span>
       </div>
-      <h2>{program.title}</h2>
+      <h3 className="sds-training-card__title">{program.title}</h3>
       <p className="sds-training-card__description">{program.description}</p>
       <dl className="sds-training-card__details">
         <div><dt><CalendarDays size={15} aria-hidden="true" /> Dates</dt><dd>{dateLabel}</dd></div>
-        {program.schedule && <div><dt><Clock3 size={15} aria-hidden="true" /> Schedule</dt><dd>{program.schedule}</dd></div>}
-        {program.location && <div><dt><MapPin size={15} aria-hidden="true" /> Location</dt><dd>{program.location}</dd></div>}
         <div><dt><Wallet size={15} aria-hidden="true" /> Fee</dt><dd>{program.fee || 'Contact us for details'}</dd></div>
       </dl>
       <div className="sds-training-card__actions">
-        <button type="button" className="sds-button sds-training-card__button--outline" onClick={() => onRequest(program, 'enquiry')}>Enquire <ArrowRight size={16} aria-hidden="true" /></button>
-        <button type="button" className="sds-button sds-button--green" onClick={() => onRequest(program, 'enrollment')}>Enroll <ArrowRight size={16} aria-hidden="true" /></button>
+        <button
+          type="button"
+          className="sds-button sds-training-card__button--outline sds-training-card__action-btn"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRequest(program, 'enquiry');
+          }}
+        >
+          Enquire <ArrowRight size={16} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="sds-button sds-button--green sds-training-card__action-btn"
+          onClick={(event) => {
+            event.stopPropagation();
+            onRequest(program, 'enrollment');
+          }}
+        >
+          Enroll <ArrowRight size={16} aria-hidden="true" />
+        </button>
       </div>
     </article>
   );
@@ -125,6 +251,7 @@ function TrainingCard({ program, onRequest }) {
 export default function TrainingPage() {
   const [state, setState] = useState({ status: 'loading', programs: [], error: '' });
   const [request, setRequest] = useState(null);
+  const [selectedProgram, setSelectedProgram] = useState(null);
 
   useEffect(() => {
     if (!db) {
@@ -147,25 +274,44 @@ export default function TrainingPage() {
     );
   }, []);
 
+  const hasLivePrograms = state.status === 'ready' && state.programs.length > 0;
+  const programsToDisplay = hasLivePrograms ? state.programs : defaultTrainingPrograms;
+  const isFallback = !hasLivePrograms && (state.status === 'empty' || state.status === 'error');
+
   return (
     <div className="sds-training-page">
       <section className="sds-training-hero">
         <div className="sds-container">
           <p className="sds-eyebrow">LEARN WITH SPENFEL</p>
           <h1>Practical skills.<br /><em>Real-world impact.</em></h1>
-          <p>Explore our upcoming training programmes, ask a question, or request a place. Our team will follow up to confirm the details.</p>
+          <p>Explore our training programme catalogue, ask questions, or enroll in upcoming cohorts. Click any programme to view curriculum and schedule.</p>
         </div>
       </section>
       <section className="sds-training-list sds-container" aria-labelledby="training-list-title">
         <div className="sds-training-list__heading">
-          <div><p className="sds-eyebrow sds-eyebrow--dark">UPCOMING OPPORTUNITIES</p><h2 id="training-list-title">Training announcements</h2></div>
-          <span>{state.status === 'ready' ? `${state.programs.length} ${state.programs.length === 1 ? 'programme' : 'programmes'}` : ''}</span>
+          <div><p className="sds-eyebrow sds-eyebrow--dark">PROGRAMME CATALOGUE</p><h2 id="training-list-title">Training programmes</h2></div>
+          <span className="sds-training-count">{programsToDisplay.length} {programsToDisplay.length === 1 ? 'programme' : 'programmes'}</span>
         </div>
+        {isFallback && (
+          <p className="sds-content-diagnostic" role="status">
+            Showing built-in catalogue programmes. Custom programmes published in Admin will appear here.
+          </p>
+        )}
         {state.status === 'loading' && <div className="sds-training-state" role="status"><Loader2 className="sds-training-spin" size={20} />Loading training programmes…</div>}
-        {state.status === 'error' && <div className="sds-training-state sds-training-state--error" role="alert"><AlertCircle size={19} />{state.error}</div>}
-        {state.status === 'empty' && <div className="sds-training-state"><Monitor size={25} /><strong>No programmes announced yet</strong><span>New training opportunities will be published here. Check back soon.</span></div>}
-        {state.status === 'ready' && <div className="sds-training-grid">{state.programs.map((program) => <TrainingCard key={program.id} program={program} onRequest={(selectedProgram, type) => setRequest({ program: selectedProgram, type })} />)}</div>}
+        {(state.status === 'ready' || isFallback) && (
+          <div className="sds-training-grid">
+            {programsToDisplay.map((program) => (
+              <TrainingCard
+                key={program.id}
+                program={program}
+                onDetails={setSelectedProgram}
+                onRequest={(selectedProgram, type) => setRequest({ program: selectedProgram, type })}
+              />
+            ))}
+          </div>
+        )}
       </section>
+      {selectedProgram && <ProgramDetailsDialog program={selectedProgram} onClose={() => setSelectedProgram(null)} onRequest={(program, type) => { setSelectedProgram(null); setRequest({ program, type }); }} />}
       {request && <TrainingRequestDialog program={request.program} type={request.type} onClose={() => setRequest(null)} />}
     </div>
   );

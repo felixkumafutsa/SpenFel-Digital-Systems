@@ -1,0 +1,24 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isActiveAdmin() {
+      return request.auth != null
+        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.active == true
+        && firestore.get(/databases/(default)/documents/admins/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /training-program-images/{trainingId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isActiveAdmin()
+        && request.resource.size > 0
+        && request.resource.size <= 5 * 1024 * 1024
+        && (
+          (request.resource.contentType == 'image/jpeg' && fileName.matches('^[A-Za-z0-9._-]+\\.(jpg|jpeg)$'))
+          || (request.resource.contentType == 'image/png' && fileName.matches('^[A-Za-z0-9._-]+\\.png$'))
+          || (request.resource.contentType == 'image/webp' && fileName.matches('^[A-Za-z0-9._-]+\\.webp$'))
+        );
+      allow delete: if isActiveAdmin();
+    }
+  }
+}

@@ -51,6 +51,48 @@ export const defaultServices = [
   },
 ];
 
+export const defaultTrainingPrograms = [
+  {
+    id: 'full-stack-web-mobile',
+    title: 'Full-Stack Web & Mobile App Development',
+    description: 'Comprehensive hands-on training covering modern frontend engineering with React and Tailwind, mobile development, backend APIs with Node.js, and cloud database integration.',
+    startDate: '2026-12-01',
+    endDate: '2027-02-28',
+    schedule: 'Saturdays, 9:00 AM – 1:00 PM CAT',
+    location: 'SpenFel Innovation Hub, Lilongwe & Online',
+    deliveryMode: 'hybrid',
+    fee: 'MWK 180,000',
+    imageUrl: '/portfolio/images/projects/cover-technical-skills-innovation-lab.png',
+    published: true,
+  },
+  {
+    id: 'iot-embedded-systems',
+    title: 'Applied IoT & Embedded Systems Engineering',
+    description: 'Learn to design, wire, program, and deploy smart connected devices. Covers microcontrollers, sensor integration, MQTT telemetry, telemetry dashboards, and industrial automation.',
+    startDate: '2026-12-10',
+    endDate: '2027-02-15',
+    schedule: 'Tuesdays & Thursdays, 5:30 PM – 7:30 PM CAT',
+    location: 'SpenFel Tech Lab, Lilongwe',
+    deliveryMode: 'in_person',
+    fee: 'MWK 160,000',
+    imageUrl: '/portfolio/images/projects/cover-iot-monitoring-gateway.png',
+    published: true,
+  },
+  {
+    id: 'practical-ai-ml-automation',
+    title: 'Practical AI, Machine Learning & Automation',
+    description: 'A project-driven curriculum on practical artificial intelligence, prompt engineering, fine-tuning, workflow automation, and integrating intelligent LLM APIs into business workflows.',
+    startDate: '2027-01-15',
+    endDate: '2027-03-30',
+    schedule: 'Self-paced with weekly live mentorship labs',
+    location: 'Virtual classroom (Google Meet / Discord)',
+    deliveryMode: 'online',
+    fee: 'MWK 150,000',
+    imageUrl: '/portfolio/images/projects/cover-auditsoft-enterprise.png',
+    published: true,
+  },
+];
+
 const productOrder = [
   'technical-skills-and-innovation-lab',
   'hospital-management-saas',

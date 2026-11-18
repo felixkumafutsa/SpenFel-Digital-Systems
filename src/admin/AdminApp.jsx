@@ -9,11 +9,13 @@ import {
   onSnapshot,
   query,
   serverTimestamp,
+  setDoc,
   Timestamp,
   updateDoc,
   where,
   writeBatch,
 } from 'firebase/firestore';
+import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -28,6 +30,7 @@ import {
   Eye,
   EyeOff,
   GraduationCap,
+  ImagePlus,
   LayoutDashboard,
   Loader2,
   LogOut,
@@ -39,11 +42,12 @@ import {
   RefreshCw,
   ShieldCheck,
   Trash2,
+  Upload,
   Wrench,
   X,
 } from 'lucide-react';
-import { auth, db, firebaseConfigured } from '../firebase';
-import { defaultProjects, defaultServices } from '../data/siteContent';
+import { auth, db, firebaseConfigured, storage } from '../firebase';
+import { defaultProjects, defaultServices, defaultTrainingPrograms } from '../data/siteContent';
 import './admin.css';
 
 const navigation = [
@@ -565,7 +569,20 @@ const initialTrainingValues = {
   location: '',
   deliveryMode: 'in_person',
   fee: '',
+  imageUrl: '',
+  imagePath: '',
   published: false,
+};
+
+const trainingImageMaxBytes = 5 * 1024 * 1024;
+const trainingImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+const storageErrorMessage = (error) => {
+  if (error?.code === 'storage/unauthorized') return 'Image upload was denied. Verify that Storage rules allow active administrators to upload training programme images.';
+  if (error?.code === 'storage/quota-exceeded') return 'The Firebase Storage quota has been reached. Try again later.';
+  if (error?.code === 'storage/canceled') return 'Image upload was cancelled.';
+  if (error?.code?.startsWith('storage/')) return 'The image could not be uploaded. Check your Storage configuration and connection, then try again.';
+  return dataErrorMessage(error, 'save this training programme');
 };
 
 const trainingDateLabel = (record) => {
@@ -578,11 +595,26 @@ const trainingDateLabel = (record) => {
 function TrainingProgramsPage() {
   const [state, setState] = useState({ status: 'loading', records: [], error: '' });
   const [editing, setEditing] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const [notice, setNotice] = useState({ type: '', message: '' });
   const [search, setSearch] = useState('');
   const titleRef = useRef(null);
+  const imageInputRef = useRef(null);
   const returnFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreview('');
+      return undefined;
+    }
+    const objectUrl = URL.createObjectURL(imageFile);
+    setImagePreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [imageFile]);
 
   useEffect(() => {
     if (!db) {
@@ -625,6 +657,8 @@ function TrainingProgramsPage() {
 
   const openEditor = (record = null) => {
     returnFocusRef.current = document.activeElement;
+    setImageFile(null);
+    setUploadProgress(0);
     setNotice({ type: '', message: '' });
     setEditing({
       id: record?.id || null,
@@ -637,9 +671,36 @@ function TrainingProgramsPage() {
         location: record.location || '',
         deliveryMode: record.deliveryMode || 'in_person',
         fee: record.fee || '',
+        imageUrl: record.imageUrl || '',
+        imagePath: record.imagePath || '',
         published: record.published === true,
       } : { ...initialTrainingValues },
     });
+  };
+
+  const selectImage = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!trainingImageTypes.includes(file.type)) {
+      setNotice({ type: 'error', message: 'Choose a JPEG, PNG, or WebP image.' });
+      event.target.value = '';
+      return;
+    }
+    if (file.size > trainingImageMaxBytes) {
+      setNotice({ type: 'error', message: 'The image must be 5 MB or smaller.' });
+      event.target.value = '';
+      return;
+    }
+    setImageFile(file);
+    setUploadProgress(0);
+    setNotice({ type: '', message: '' });
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview('');
+    if (imageInputRef.current) imageInputRef.current.value = '';
+    updateValue('imageUrl', '');
   };
 
   const updateValue = (field, value) => setEditing((current) => ({
@@ -656,6 +717,10 @@ function TrainingProgramsPage() {
     }
     if (!values.description.trim() || values.description.trim().length > 2000) {
       setNotice({ type: 'error', message: 'Enter programme details of 1–2,000 characters.' });
+      return;
+    }
+    if (!imageFile && !values.imageUrl.trim()) {
+      setNotice({ type: 'error', message: 'A programme cover image is required. Please upload an image file or enter an image URL.' });
       return;
     }
     if (!values.startDate || (values.endDate && values.endDate < values.startDate)) {
@@ -676,21 +741,62 @@ function TrainingProgramsPage() {
       location: values.location.trim(),
       deliveryMode: values.deliveryMode,
       fee: values.fee.trim(),
+      imageUrl: values.imageUrl.trim(),
+      imagePath: values.imagePath,
       published: values.published === true,
     };
 
     setSaving(true);
+    setUploadProgress(0);
     setNotice({ type: '', message: '' });
+    let uploadedImagePath = '';
     try {
+      const programRef = editing.id
+        ? doc(db, 'trainingAnnouncements', editing.id)
+        : doc(collection(db, 'trainingAnnouncements'));
+      if (imageFile) {
+        if (!storage) throw new Error('Firebase Storage is not configured. Set VITE_FIREBASE_STORAGE_BUCKET and configure Storage rules.');
+        const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase().slice(-80) || 'cover';
+        uploadedImagePath = `training-program-images/${programRef.id}/${Date.now()}-${safeName}`;
+        const imageRef = ref(storage, uploadedImagePath);
+        const uploadTask = uploadBytesResumable(imageRef, imageFile, { contentType: imageFile.type });
+        await new Promise((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => setUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
+            reject,
+            resolve,
+          );
+        });
+        payload.imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+        payload.imagePath = uploadedImagePath;
+      }
+
       if (editing.id) {
-        await updateDoc(doc(db, 'trainingAnnouncements', editing.id), { ...payload, updatedAt: serverTimestamp() });
+        await updateDoc(programRef, { ...payload, updatedAt: serverTimestamp() });
       } else {
-        await addDoc(collection(db, 'trainingAnnouncements'), { ...payload, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+        await setDoc(programRef, { ...payload, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
+      }
+
+      if (uploadedImagePath && values.imagePath && values.imagePath !== uploadedImagePath && storage) {
+        try {
+          await deleteObject(ref(storage, values.imagePath));
+        } catch (error) {
+          console.warn('Could not remove the replaced training image:', error);
+        }
       }
       setEditing(null);
+      setImageFile(null);
       setNotice({ type: 'success', message: `Training programme ${editing.id ? 'updated' : 'created'} successfully.` });
     } catch (error) {
-      setNotice({ type: 'error', message: dataErrorMessage(error, `${editing.id ? 'update' : 'create'} this training programme`) });
+      if (uploadedImagePath && storage) {
+        try {
+          await deleteObject(ref(storage, uploadedImagePath));
+        } catch (cleanupError) {
+          console.warn('Could not clean up an unused training image:', cleanupError);
+        }
+      }
+      setNotice({ type: 'error', message: storageErrorMessage(error) });
     } finally {
       setSaving(false);
     }
@@ -709,12 +815,68 @@ function TrainingProgramsPage() {
     }
   };
 
+  const removeProgram = async (record) => {
+    if (!window.confirm(`Delete “${record.title}”? This cannot be undone.`)) return;
+    setNotice({ type: '', message: '' });
+    try {
+      if (record.imagePath && storage) {
+        try {
+          await deleteObject(ref(storage, record.imagePath));
+        } catch (err) {
+          console.warn('Could not remove storage image:', err);
+        }
+      }
+      await deleteDoc(doc(db, 'trainingAnnouncements', record.id));
+      setNotice({ type: 'success', message: `“${record.title}” deleted.` });
+    } catch (error) {
+      setNotice({ type: 'error', message: dataErrorMessage(error, 'delete this training programme') });
+    }
+  };
+
+  const seedDefaults = async () => {
+    if (!window.confirm(`Import all ${defaultTrainingPrograms.length} built-in starter programmes? This adds them to your training announcements.`)) return;
+    setSeeding(true);
+    setNotice({ type: '', message: '' });
+    try {
+      const latest = await getDocs(collection(db, 'trainingAnnouncements'));
+      if (!latest.empty) {
+        setNotice({ type: 'error', message: 'Training programmes already exist. No defaults were imported.' });
+        return;
+      }
+      const batch = writeBatch(db);
+      defaultTrainingPrograms.forEach((item) => {
+        const itemRef = doc(collection(db, 'trainingAnnouncements'));
+        batch.set(itemRef, {
+          title: item.title,
+          description: item.description,
+          startDate: item.startDate,
+          endDate: item.endDate,
+          schedule: item.schedule,
+          location: item.location,
+          deliveryMode: item.deliveryMode,
+          fee: item.fee,
+          imageUrl: item.imageUrl,
+          imagePath: '',
+          published: true,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      });
+      await batch.commit();
+      setNotice({ type: 'success', message: `Imported ${defaultTrainingPrograms.length} starter training programmes.` });
+    } catch (error) {
+      setNotice({ type: 'error', message: dataErrorMessage(error, 'import starter training programmes') });
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   return (
     <>
       <PageHeading
         eyebrow="PUBLIC CONTENT"
         title="Training announcements"
-        description="Create programmes, publish announcements, and manage visibility on the public training page."
+        description="Create programmes with cover images, publish announcements, and manage visibility on the public training catalogue."
         action={<button className="admin-button admin-button--primary" type="button" onClick={() => openEditor()}><Plus size={17} />Add programme</button>}
       />
       {notice.message && <div className={`admin-alert ${notice.type === 'error' ? 'admin-alert--error' : 'admin-alert--success'}`} role={notice.type === 'error' ? 'alert' : 'status'}>{notice.type === 'error' ? <AlertCircle size={18} /> : <Check size={18} />}{notice.message}</div>}
@@ -725,13 +887,25 @@ function TrainingProgramsPage() {
         </div>
         {state.status === 'loading' && <div className="admin-alert" role="status"><Loader2 className="admin-spin" size={18} />Loading programmes…</div>}
         {state.status === 'error' && <div className="admin-alert admin-alert--error" role="alert"><AlertCircle size={18} />{state.error}</div>}
-        {state.status === 'empty' && <div className="admin-empty admin-empty--compact"><GraduationCap size={24} /><strong>No training programmes yet</strong><span>Add a programme and publish it when it is ready to appear on the website.</span></div>}
+        {state.status === 'empty' && (
+          <div className="admin-empty admin-empty--compact">
+            <GraduationCap size={24} />
+            <strong>No training programmes yet</strong>
+            <span>Add a programme with a cover image, or import built-in starter programmes to populate your catalogue immediately.</span>
+            <button className="admin-button admin-button--primary" type="button" onClick={seedDefaults} disabled={seeding}>
+              {seeding ? <Loader2 className="admin-spin" size={16} /> : <Plus size={16} />}
+              {seeding ? 'Importing…' : 'Import starter programmes'}
+            </button>
+          </div>
+        )}
         {state.status === 'ready' && (
           filteredRecords.length ? (
             <div className="admin-training-program-list">
               {filteredRecords.map((record) => (
                 <article className="admin-training-program" key={record.id}>
-                  <span className="admin-training-program__icon"><GraduationCap size={20} aria-hidden="true" /></span>
+                  {record.imageUrl
+                    ? <img className="admin-training-program__image" src={record.imageUrl} alt="" />
+                    : <span className="admin-training-program__icon"><GraduationCap size={20} aria-hidden="true" /></span>}
                   <div className="admin-training-program__copy">
                     <div className="admin-training-program__title"><h3>{record.title}</h3><span className={`admin-training-badge${record.published ? ' is-published' : ''}`}>{record.published ? 'Published' : 'Draft'}</span></div>
                     <p>{record.description}</p>
@@ -740,6 +914,7 @@ function TrainingProgramsPage() {
                   <div className="admin-training-program__actions">
                     <button className="admin-button admin-button--small" type="button" onClick={() => openEditor(record)}>Edit</button>
                     <button className="admin-button admin-button--small admin-button--quiet" type="button" onClick={() => togglePublished(record)}>{record.published ? <><EyeOff size={14} />Unpublish</> : <><Eye size={14} />Publish</>}</button>
+                    <button className="admin-button admin-button--small admin-button--danger" type="button" onClick={() => removeProgram(record)} aria-label={`Delete ${record.title}`}><Trash2 size={14} /></button>
                   </div>
                 </article>
               ))}
@@ -757,6 +932,60 @@ function TrainingProgramsPage() {
             <form className="admin-editor-form" onSubmit={saveProgram}>
               <label className="admin-field"><span>Programme title <i>*</i></span><input ref={titleRef} maxLength={140} value={editing.values.title} onChange={(event) => updateValue('title', event.target.value)} required /></label>
               <label className="admin-field"><span>Programme details <i>*</i></span><textarea rows={4} maxLength={2000} value={editing.values.description} onChange={(event) => updateValue('description', event.target.value)} required /></label>
+              <div className="admin-field admin-image-field">
+                <span>Programme cover image <i>*</i></span>
+                <div className="admin-image-preview">
+                  {imagePreview || editing.values.imageUrl ? (
+                    <div className="admin-image-preview__filled">
+                      <img src={imagePreview || editing.values.imageUrl} alt={`Preview of ${editing.values.title || 'programme cover'}`} />
+                      <button type="button" className="admin-image-preview__remove-btn" onClick={removeImage} disabled={saving} aria-label="Remove image">
+                        <X size={14} aria-hidden="true" /> Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="admin-image-preview__empty">
+                      <ImagePlus size={24} />
+                      <span>No cover image selected (Required)</span>
+                    </div>
+                  )}
+                </div>
+                <div className="admin-image-actions">
+                  <label className={`admin-button admin-button--small admin-image-picker${!storage ? ' is-disabled' : ''}`}>
+                    <Upload size={15} aria-hidden="true" />
+                    {imageFile ? 'Change image file' : editing.values.imageUrl ? 'Replace with file' : 'Upload image file'}
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      aria-label="Choose a JPEG, PNG, or WebP programme cover"
+                      disabled={saving || !storage}
+                      onChange={selectImage}
+                    />
+                  </label>
+                  <span className="admin-image-actions__divider">or</span>
+                  <input
+                    type="url"
+                    className="admin-image-url-input"
+                    placeholder="Enter image URL (e.g. /portfolio/images/... or https://...)"
+                    value={imageFile ? '' : editing.values.imageUrl}
+                    disabled={saving || Boolean(imageFile)}
+                    onChange={(event) => {
+                      setImageFile(null);
+                      updateValue('imageUrl', event.target.value.trim());
+                    }}
+                  />
+                </div>
+                <small className="admin-image-field__hint">
+                  A cover image is required. Upload a JPEG, PNG, or WebP image up to 5 MB, or enter a direct image URL.
+                </small>
+                {!storage && <small className="admin-image-field__hint is-error">Storage is unconfigured; you can enter an image URL directly.</small>}
+                {saving && imageFile && (
+                  <div className="admin-image-upload-progress" role="status">
+                    <span>Uploading image · {uploadProgress}%</span>
+                    <progress max="100" value={uploadProgress}>{uploadProgress}%</progress>
+                  </div>
+                )}
+              </div>
               <div className="admin-field-row">
                 <label className="admin-field"><span>Start date <i>*</i></span><input type="date" value={editing.values.startDate} onChange={(event) => updateValue('startDate', event.target.value)} required /></label>
                 <label className="admin-field"><span>End date</span><input type="date" min={editing.values.startDate || undefined} value={editing.values.endDate} onChange={(event) => updateValue('endDate', event.target.value)} /></label>

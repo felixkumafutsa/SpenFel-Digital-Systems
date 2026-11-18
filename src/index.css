@@ -3800,22 +3800,113 @@ a.sds-contact__card:hover > svg:last-child {
 
 .sds-training-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
 }
 
 .sds-training-card {
   display: flex;
   min-width: 0;
   flex-direction: column;
-  padding: clamp(20px, 3vw, 29px);
+  overflow: hidden;
   border: 1px solid #dfe7ec;
-  border-radius: 3px;
+  border-radius: 6px;
   background: #fff;
   box-shadow: 0 12px 30px rgba(7,27,58,.045);
+  cursor: pointer;
+  user-select: none;
+  transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
+}
+
+.sds-training-card:hover {
+  transform: translateY(-4px);
+  border-color: #c0d8c7;
+  box-shadow: 0 18px 36px rgba(7,27,58,.1);
+}
+
+.sds-training-card:focus-visible {
+  outline: 3px solid #168d46;
+  outline-offset: 3px;
+}
+
+.sds-training-card:hover .sds-training-card__title {
+  color: #167746;
+}
+
+.sds-training-card__image-wrap {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #e7eee9;
+}
+
+.sds-training-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .35s ease;
+}
+
+.sds-training-card:hover .sds-training-card__image {
+  transform: scale(1.04);
+}
+
+.sds-training-card__image--fallback {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: #38764d;
+  background:
+    radial-gradient(ellipse at 74% 20%, rgba(255,255,255,.82), transparent 35%),
+    linear-gradient(135deg, #e8f1e9, #dce8df 52%, #cbdccd);
+}
+
+.sds-training-card__image--fallback span {
+  color: #456b50;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: .15em;
+}
+
+.sds-training-card__details-link {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 11px;
+  border: 1px solid rgba(255,255,255,.68);
+  border-radius: 4px;
+  color: #fff;
+  background: rgba(7,27,58,.84);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+  transition: background .2s ease, transform .2s ease;
+}
+
+.sds-training-card:hover .sds-training-card__details-link {
+  background: #078b45;
+  transform: translateX(2px);
+}
+
+.sds-training-card__top,
+.sds-training-card__title,
+.sds-training-card__description,
+.sds-training-card__details,
+.sds-training-card__actions {
+  margin-right: clamp(18px, 2.3vw, 25px);
+  margin-left: clamp(18px, 2.3vw, 25px);
 }
 
 .sds-training-card__top {
+  margin-top: 21px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -3839,13 +3930,27 @@ a.sds-contact__card:hover > svg:last-child {
   letter-spacing: 0;
 }
 
-.sds-training-card h2 {
-  margin: 18px 0 0;
+.sds-training-card__title {
+  display: block;
+  margin: 14px 0 0;
   color: var(--sds-navy);
-  font-size: clamp(21px, 2.5vw, 28px);
+  font-size: clamp(20px, 2.3vw, 25px);
   font-weight: 680;
-  letter-spacing: -.045em;
-  line-height: 1.15;
+  letter-spacing: -.035em;
+  line-height: 1.2;
+  transition: color .18s ease;
+}
+
+.sds-training-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border: 1px solid #dcece0;
+  border-radius: 999px;
+  color: #276b3c;
+  background: #f0f7f2;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .sds-training-card__description {
@@ -3862,6 +3967,10 @@ a.sds-contact__card:hover > svg:last-child {
   margin: 20px 0 0;
   padding-top: 16px;
   border-top: 1px solid #edf1f3;
+}
+
+.sds-training-card__details:last-of-type {
+  margin-bottom: 0;
 }
 
 .sds-training-card__details > div {
@@ -3901,7 +4010,8 @@ a.sds-contact__card:hover > svg:last-child {
   flex-wrap: wrap;
   gap: 9px;
   margin-top: auto;
-  padding-top: 21px;
+  margin-bottom: 21px;
+  padding-top: 19px;
 }
 
 .sds-training-card__actions .sds-button {
@@ -3979,6 +4089,45 @@ a.sds-contact__card:hover > svg:last-child {
   border-radius: 4px;
   background: #fff;
   box-shadow: 0 22px 70px rgba(0,0,0,.26);
+}
+
+.sds-training-details {
+  width: min(100%, 700px);
+}
+
+.sds-training-details__image {
+  display: block;
+  width: 100%;
+  max-height: 310px;
+  aspect-ratio: 16 / 8;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.sds-training-details__description {
+  margin: 19px 0 0;
+  color: #56677a;
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.sds-training-details__facts {
+  margin-top: 18px;
+  padding-top: 17px;
+  border-top: 1px solid #edf1f3;
+}
+
+.sds-training-details__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.sds-training-details__actions .sds-button {
+  min-height: 42px;
+  gap: 8px;
 }
 
 .sds-training-dialog__heading {
@@ -4089,6 +4238,13 @@ a.sds-contact__card:hover > svg:last-child {
 
 @media (max-width: 760px) {
   .sds-training-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+  }
+}
+
+@media (max-width: 580px) {
+  .sds-training-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -4104,8 +4260,28 @@ a.sds-contact__card:hover > svg:last-child {
     grid-template-columns: minmax(82px, .7fr) minmax(0, 1.3fr);
   }
 
+  .sds-training-card__top,
+  .sds-training-card__title,
+  .sds-training-card__description,
+  .sds-training-card__details,
+  .sds-training-card__actions {
+    margin-right: 18px;
+    margin-left: 18px;
+  }
+
   .sds-training-card__actions .sds-button {
     flex: 1;
     padding-inline: 9px;
+  }
+
+  .sds-training-details__actions .sds-button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sds-training-card,
+  .sds-training-card__image {
+    transition: none;
   }
 }
