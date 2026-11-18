@@ -578,6 +578,49 @@ const initialTrainingValues = {
 const trainingImageMaxBytes = 5 * 1024 * 1024;
 const trainingImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
+const compressImageFile = (file, maxWidth = 1280, quality = 0.82) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(readerEvent.target.result);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        let dataUrl = canvas.toDataURL('image/webp', quality);
+        if (!dataUrl.startsWith('data:image/webp')) {
+          dataUrl = canvas.toDataURL('image/jpeg', quality);
+        }
+        if (dataUrl.length > 700000) {
+          const scale = 0.75;
+          canvas.width = Math.round(width * scale);
+          canvas.height = Math.round(height * scale);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          dataUrl = canvas.toDataURL('image/webp', 0.72);
+          if (!dataUrl.startsWith('data:image/webp')) {
+            dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+          }
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error('Could not load image file.'));
+      img.src = readerEvent.target.result;
+    };
+    reader.onerror = () => reject(new Error('Could not read image file.'));
+    reader.readAsDataURL(file);
+  });
+
 const storageErrorMessage = (error) => {
   if (error?.code === 'storage/unauthorized') return 'Image upload was denied. Verify that Storage rules allow active administrators to upload training programme images.';
   if (error?.code === 'storage/quota-exceeded') return 'The Firebase Storage quota has been reached. Try again later.';
@@ -634,8 +677,12 @@ function TrainingProgramsPage() {
     }, (error) => setState({ status: 'error', records: [], error: dataErrorMessage(error, 'load training announcements') }));
   }, []);
 
+  const isEditing = Boolean(editing);
+  const savingRef = useRef(saving);
+  savingRef.current = saving;
+
   useEffect(() => {
-    if (!editing) {
+    if (!isEditing) {
       returnFocusRef.current?.focus?.();
       returnFocusRef.current = null;
       return undefined;
@@ -643,14 +690,14 @@ function TrainingProgramsPage() {
 
     const timer = window.setTimeout(() => titleRef.current?.focus(), 0);
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && !saving) setEditing(null);
+      if (event.key === 'Escape' && !savingRef.current) setEditing(null);
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       window.clearTimeout(timer);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [editing, saving]);
+  }, [isEditing]);
 
   const filteredRecords = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -754,26 +801,43 @@ function TrainingProgramsPage() {
     setUploadProgress(0);
     setNotice({ type: '', message: '' });
     let uploadedImagePath = '';
+    let usedInlineFallback = false;
     try {
       const programRef = editing.id
         ? doc(db, 'trainingAnnouncements', editing.id)
         : doc(collection(db, 'trainingAnnouncements'));
       if (imageFile) {
-        if (!storage) throw new Error('Firebase Storage is not configured. Set VITE_FIREBASE_STORAGE_BUCKET and configure Storage rules.');
-        const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase().slice(-80) || 'cover';
-        uploadedImagePath = `training-program-images/${programRef.id}/${Date.now()}-${safeName}`;
-        const imageRef = ref(storage, uploadedImagePath);
-        const uploadTask = uploadBytesResumable(imageRef, imageFile, { contentType: imageFile.type });
-        await new Promise((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => setUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
-            reject,
-            resolve,
-          );
-        });
-        payload.imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
-        payload.imagePath = uploadedImagePath;
+        let uploadSucceeded = false;
+        if (storage) {
+          try {
+            const safeName = imageFile.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase().slice(-80) || 'cover';
+            uploadedImagePath = `training-program-images/${programRef.id}/${Date.now()}-${safeName}`;
+            const imageRef = ref(storage, uploadedImagePath);
+            const uploadTask = uploadBytesResumable(imageRef, imageFile, { contentType: imageFile.type });
+            await new Promise((resolve, reject) => {
+              uploadTask.on(
+                'state_changed',
+                (snapshot) => setUploadProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)),
+                reject,
+                resolve,
+              );
+            });
+            payload.imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            payload.imagePath = uploadedImagePath;
+            uploadSucceeded = true;
+          } catch (storageErr) {
+            console.warn('Firebase Storage upload was unavailable or rejected. Using optimized inline image fallback.', storageErr);
+            uploadedImagePath = '';
+          }
+        }
+
+        if (!uploadSucceeded) {
+          setNotice({ type: '', message: 'Storage bucket unavailable. Optimizing and saving cover image…' });
+          const optimizedDataUrl = await compressImageFile(imageFile);
+          payload.imageUrl = optimizedDataUrl;
+          payload.imagePath = '';
+          usedInlineFallback = true;
+        }
       }
 
       if (editing.id) {
@@ -791,7 +855,10 @@ function TrainingProgramsPage() {
       }
       setEditing(null);
       setImageFile(null);
-      setNotice({ type: 'success', message: `Training programme ${editing.id ? 'updated' : 'created'} successfully.` });
+      setNotice({
+        type: 'success',
+        message: `Training programme ${editing.id ? 'updated' : 'created'} successfully${usedInlineFallback ? ' (cover image stored in database)' : ''}.`,
+      });
     } catch (error) {
       if (uploadedImagePath && storage) {
         try {
