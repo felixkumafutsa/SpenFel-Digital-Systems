@@ -582,7 +582,10 @@ const storageErrorMessage = (error) => {
   if (error?.code === 'storage/unauthorized') return 'Image upload was denied. Verify that Storage rules allow active administrators to upload training programme images.';
   if (error?.code === 'storage/quota-exceeded') return 'The Firebase Storage quota has been reached. Try again later.';
   if (error?.code === 'storage/canceled') return 'Image upload was cancelled.';
-  if (error?.code?.startsWith('storage/')) return 'The image could not be uploaded. Check your Storage configuration and connection, then try again.';
+  if (error?.code === 'storage/bucket-not-found' || error?.code === 'storage/unknown' || String(error?.message || '').toLowerCase().includes('cors') || String(error?.message || '').toLowerCase().includes('network')) {
+    return 'Image upload failed. Ensure Firebase Storage has been initialized in your Firebase Console (Build > Storage > Get Started), or enter a direct Image URL.';
+  }
+  if (error?.code?.startsWith('storage/')) return 'The image could not be uploaded. Check your Storage configuration and connection, or use a direct Image URL.';
   return dataErrorMessage(error, 'save this training programme');
 };
 

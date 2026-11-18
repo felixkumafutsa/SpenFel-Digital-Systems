@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { addDoc, collection, onSnapshot, query, serverTimestamp, where } from 'firebase/firestore';
 import { AlertCircle, ArrowRight, CalendarDays, Clock3, Loader2, MapPin, Monitor, Send, Wallet, X } from 'lucide-react';
 import { db } from '../firebase';
-import { defaultTrainingPrograms } from '../data/siteContent';
 
 const deliveryLabels = {
   online: 'Online',
@@ -212,37 +211,39 @@ function TrainingCard({ program, onDetails, onRequest }) {
           <ArrowRight size={14} />
         </div>
       </div>
-      <div className="sds-training-card__top">
-        <span className="sds-training-card__tag">TRAINING PROGRAMME</span>
-        <span className="sds-training-card__delivery">{deliveryLabels[program.deliveryMode] || 'Training'}</span>
-      </div>
-      <h3 className="sds-training-card__title">{program.title}</h3>
-      <p className="sds-training-card__description">{program.description}</p>
-      <dl className="sds-training-card__details">
-        <div><dt><CalendarDays size={15} aria-hidden="true" /> Dates</dt><dd>{dateLabel}</dd></div>
-        <div><dt><Wallet size={15} aria-hidden="true" /> Fee</dt><dd>{program.fee || 'Contact us for details'}</dd></div>
-      </dl>
-      <div className="sds-training-card__actions">
-        <button
-          type="button"
-          className="sds-button sds-training-card__button--outline sds-training-card__action-btn"
-          onClick={(event) => {
-            event.stopPropagation();
-            onRequest(program, 'enquiry');
-          }}
-        >
-          Enquire <ArrowRight size={16} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="sds-button sds-button--green sds-training-card__action-btn"
-          onClick={(event) => {
-            event.stopPropagation();
-            onRequest(program, 'enrollment');
-          }}
-        >
-          Enroll <ArrowRight size={16} aria-hidden="true" />
-        </button>
+      <div className="sds-training-card__body">
+        <div className="sds-training-card__top">
+          <span className="sds-training-card__tag">TRAINING PROGRAMME</span>
+          <span className="sds-training-card__delivery">{deliveryLabels[program.deliveryMode] || 'Training'}</span>
+        </div>
+        <h3 className="sds-training-card__title" title={program.title}>{program.title}</h3>
+        <p className="sds-training-card__description">{program.description}</p>
+        <dl className="sds-training-card__details">
+          <div><dt><CalendarDays size={14} aria-hidden="true" /> Dates</dt><dd>{dateLabel}</dd></div>
+          <div><dt><Wallet size={14} aria-hidden="true" /> Fee</dt><dd>{program.fee || 'Contact us for details'}</dd></div>
+        </dl>
+        <div className="sds-training-card__actions">
+          <button
+            type="button"
+            className="sds-button sds-training-card__button--outline sds-training-card__action-btn"
+            onClick={(event) => {
+              event.stopPropagation();
+              onRequest(program, 'enquiry');
+            }}
+          >
+            Enquire <ArrowRight size={15} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="sds-button sds-button--green sds-training-card__action-btn"
+            onClick={(event) => {
+              event.stopPropagation();
+              onRequest(program, 'enrollment');
+            }}
+          >
+            Enroll <ArrowRight size={15} aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </article>
   );
@@ -274,10 +275,6 @@ export default function TrainingPage() {
     );
   }, []);
 
-  const hasLivePrograms = state.status === 'ready' && state.programs.length > 0;
-  const programsToDisplay = hasLivePrograms ? state.programs : defaultTrainingPrograms;
-  const isFallback = !hasLivePrograms && (state.status === 'empty' || state.status === 'error');
-
   return (
     <div className="sds-training-page">
       <section className="sds-training-hero">
@@ -290,17 +287,20 @@ export default function TrainingPage() {
       <section className="sds-training-list sds-container" aria-labelledby="training-list-title">
         <div className="sds-training-list__heading">
           <div><p className="sds-eyebrow sds-eyebrow--dark">PROGRAMME CATALOGUE</p><h2 id="training-list-title">Training programmes</h2></div>
-          <span className="sds-training-count">{programsToDisplay.length} {programsToDisplay.length === 1 ? 'programme' : 'programmes'}</span>
+          {state.status === 'ready' && <span className="sds-training-count">{state.programs.length} {state.programs.length === 1 ? 'programme' : 'programmes'}</span>}
         </div>
-        {isFallback && (
-          <p className="sds-content-diagnostic" role="status">
-            Showing built-in catalogue programmes. Custom programmes published in Admin will appear here.
-          </p>
-        )}
         {state.status === 'loading' && <div className="sds-training-state" role="status"><Loader2 className="sds-training-spin" size={20} />Loading training programmes…</div>}
-        {(state.status === 'ready' || isFallback) && (
+        {state.status === 'error' && <div className="sds-training-state sds-training-state--error" role="alert"><AlertCircle size={19} />{state.error}</div>}
+        {state.status === 'empty' && (
+          <div className="sds-training-state">
+            <Monitor size={26} />
+            <strong>No training programmes announced yet</strong>
+            <span>New training opportunities will be published here. Check back soon.</span>
+          </div>
+        )}
+        {state.status === 'ready' && (
           <div className="sds-training-grid">
-            {programsToDisplay.map((program) => (
+            {state.programs.map((program) => (
               <TrainingCard
                 key={program.id}
                 program={program}

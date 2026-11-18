@@ -3801,7 +3801,7 @@ a.sds-contact__card:hover > svg:last-child {
 .sds-training-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .sds-training-card {
@@ -3810,9 +3810,9 @@ a.sds-contact__card:hover > svg:last-child {
   flex-direction: column;
   overflow: hidden;
   border: 1px solid #dfe7ec;
-  border-radius: 6px;
+  border-radius: 8px;
   background: #fff;
-  box-shadow: 0 12px 30px rgba(7,27,58,.045);
+  box-shadow: 0 10px 28px rgba(7,27,58,.045);
   cursor: pointer;
   user-select: none;
   transition: box-shadow .22s ease, transform .22s ease, border-color .22s ease;
@@ -3821,7 +3821,7 @@ a.sds-contact__card:hover > svg:last-child {
 .sds-training-card:hover {
   transform: translateY(-4px);
   border-color: #c0d8c7;
-  box-shadow: 0 18px 36px rgba(7,27,58,.1);
+  box-shadow: 0 16px 36px rgba(7,27,58,.1);
 }
 
 .sds-training-card:focus-visible {
@@ -3896,17 +3896,16 @@ a.sds-contact__card:hover > svg:last-child {
   transform: translateX(2px);
 }
 
-.sds-training-card__top,
-.sds-training-card__title,
-.sds-training-card__description,
-.sds-training-card__details,
-.sds-training-card__actions {
-  margin-right: clamp(18px, 2.3vw, 25px);
-  margin-left: clamp(18px, 2.3vw, 25px);
+.sds-training-card__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  padding: clamp(16px, 2vw, 22px);
 }
 
 .sds-training-card__top {
-  margin-top: 21px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -3923,7 +3922,7 @@ a.sds-contact__card:hover > svg:last-child {
 }
 
 .sds-training-card__delivery {
-  padding: 5px 8px;
+  padding: 4px 8px;
   border: 1px solid #dcece0;
   border-radius: 3px;
   background: #f3f9f4;
@@ -3931,13 +3930,18 @@ a.sds-contact__card:hover > svg:last-child {
 }
 
 .sds-training-card__title {
-  display: block;
-  margin: 14px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  margin: 12px 0 0;
   color: var(--sds-navy);
-  font-size: clamp(20px, 2.3vw, 25px);
+  font-size: clamp(17px, 1.4vw, 19px);
   font-weight: 680;
-  letter-spacing: -.035em;
-  line-height: 1.2;
+  letter-spacing: -.025em;
+  line-height: 1.35;
   transition: color .18s ease;
 }
 
@@ -3954,18 +3958,23 @@ a.sds-contact__card:hover > svg:last-child {
 }
 
 .sds-training-card__description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
   margin: 10px 0 0;
-  color: #687889;
-  font-size: 12px;
-  line-height: 1.7;
-  white-space: pre-wrap;
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.6;
 }
 
 .sds-training-card__details {
   display: grid;
-  gap: 9px;
-  margin: 20px 0 0;
-  padding-top: 16px;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding-top: 14px;
   border-top: 1px solid #edf1f3;
 }
 
@@ -3974,16 +3983,16 @@ a.sds-contact__card:hover > svg:last-child {
 }
 
 .sds-training-card__details > div {
-  display: grid;
-  grid-template-columns: minmax(90px, .7fr) minmax(0, 1.3fr);
-  gap: 12px;
-  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
 }
 
 .sds-training-card__details dt,
 .sds-training-card__details dd {
   margin: 0;
-  font-size: 11px;
+  font-size: 11.5px;
   line-height: 1.5;
 }
 
@@ -3992,6 +4001,7 @@ a.sds-contact__card:hover > svg:last-child {
   gap: 6px;
   align-items: center;
   color: #8794a2;
+  flex-shrink: 0;
 }
 
 .sds-training-card__details dt svg {
@@ -4002,23 +4012,32 @@ a.sds-contact__card:hover > svg:last-child {
 .sds-training-card__details dd {
   color: #384b61;
   font-weight: 600;
+  text-align: right;
+  word-break: break-word;
   overflow-wrap: anywhere;
 }
 
 .sds-training-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   margin-top: auto;
-  margin-bottom: 21px;
-  padding-top: 19px;
+  padding-top: 18px;
+  width: 100%;
 }
 
 .sds-training-card__actions .sds-button {
-  min-height: 41px;
-  gap: 8px;
-  padding-inline: 14px;
-  font-size: 11px;
+  width: 100%;
+  min-height: 38px;
+  gap: 6px;
+  padding: 8px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .sds-training-card__button--outline {
@@ -4236,46 +4255,47 @@ a.sds-contact__card:hover > svg:last-child {
   to { transform: rotate(360deg); }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 980px) {
   .sds-training-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 15px;
+    gap: 20px;
   }
 }
 
-@media (max-width: 580px) {
+@media (max-width: 640px) {
   .sds-training-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
-}
 
-@media (max-width: 600px) {
   .sds-training-list__heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 7px;
   }
 
-  .sds-training-card__details > div {
-    grid-template-columns: minmax(82px, .7fr) minmax(0, 1.3fr);
+  .sds-training-card__body {
+    padding: 18px 16px;
   }
 
-  .sds-training-card__top,
-  .sds-training-card__title,
-  .sds-training-card__description,
-  .sds-training-card__details,
   .sds-training-card__actions {
-    margin-right: 18px;
-    margin-left: 18px;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
   }
 
   .sds-training-card__actions .sds-button {
-    flex: 1;
-    padding-inline: 9px;
+    padding-inline: 8px;
+    font-size: 11px;
   }
 
   .sds-training-details__actions .sds-button {
     flex: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .sds-training-card__actions {
+    grid-template-columns: 1fr;
   }
 }
 
