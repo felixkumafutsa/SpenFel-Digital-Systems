@@ -4,13 +4,9 @@ import {
   AlertCircle,
   ArrowRight,
   ArrowUpRight,
-  BrainCircuit,
-  Building2,
   CalendarDays,
   CheckCircle2,
   Clock3,
-  Code2,
-  Cpu,
   GraduationCap,
   Laptop,
   Loader2,
@@ -30,29 +26,6 @@ const deliveryLabels = {
   in_person: 'In-Person Lab',
   hybrid: 'Hybrid (Lab & Online)',
 };
-
-const trainingPillars = [
-  {
-    icon: Code2,
-    title: 'Full-Stack Software Engineering',
-    desc: 'React, Node.js, REST APIs, PostgreSQL/Firebase & Cloud Architecture.',
-  },
-  {
-    icon: Cpu,
-    title: 'Applied IoT & Embedded Systems',
-    desc: 'Microcontrollers (ESP32/Arduino), sensors, wireless telemetry & remote automation.',
-  },
-  {
-    icon: BrainCircuit,
-    title: 'Practical AI, Machine Learning & Automation',
-    desc: 'Applied LLM workflows, intelligent agent pipelines, data analytics & process automation.',
-  },
-  {
-    icon: Building2,
-    title: 'Institutional & Corporate Upskilling',
-    desc: 'Tailored technology training for government agencies, NGOs, corporate teams & banks.',
-  },
-];
 
 const formatDate = (value) => {
   if (!value) return '';
@@ -380,21 +353,6 @@ export default function TrainingPage() {
             <a href="/stem-robotics-education" className="sds-button sds-button--skills-ghost">
               <Sparkles size={14} aria-hidden="true" /> Looking for STEM &amp; Robotics for Schools? →
             </a>
-          </div>
-
-          {/* 4 Training Tracks Pillar Bar */}
-          <div className="sds-skills-pillars">
-            {trainingPillars.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="sds-skills-pillar-item">
-                <div className="sds-skills-pillar-icon">
-                  <Icon size={18} aria-hidden="true" />
-                </div>
-                <div>
-                  <strong>{title}</strong>
-                  <p>{desc}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
