@@ -10,7 +10,6 @@ const navLinks = [
   { name: 'Digital Solutions', href: '#services' },
   { name: 'STEM & Robotics', href: '/stem-robotics-education', isNew: true },
   { name: 'Skills Lab', href: '/training' },
-  { name: 'Partnerships', href: '/partnerships' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -62,7 +61,7 @@ const Navigation = ({ onGetStarted }) => {
               {link.isNew && <span className="sds-nav__pill">Academy</span>}
             </a>
           ))}
-          <button className="sds-nav__cta" type="button" onClick={onGetStarted}>Partner With Us <span aria-hidden="true">↗</span></button>
+          <a className="sds-nav__cta" href="/stem-robotics-education#partnership-enquiry">Partner With Us <span aria-hidden="true">↗</span></a>
         </div>
 
         <button
@@ -96,13 +95,13 @@ const Navigation = ({ onGetStarted }) => {
                   <span aria-hidden="true">↗</span>
                 </a>
               ))}
-              <button
+              <a
                 className="sds-nav__mobile-cta"
-                type="button"
-                onClick={() => { closeMenu(); onGetStarted(); }}
+                href="/stem-robotics-education#partnership-enquiry"
+                onClick={closeMenu}
               >
                 Partner With Us <span aria-hidden="true">↗</span>
-              </button>
+              </a>
             </div>
           </motion.div>
         )}

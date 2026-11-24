@@ -21,9 +21,20 @@ import {
   Sprout,
   Users,
   Wrench,
+  Palette,
+  Zap,
 } from 'lucide-react';
 import useCardReveal from './useCardReveal';
 import PartnershipEnquiryForm from './PartnershipEnquiryForm';
+import {
+  RoverIllustration,
+  IrrigationIllustration,
+  LightingIllustration,
+  TelemetryIllustration,
+  ArcadeGameIllustration,
+  AiVisionIllustration,
+  LabHeroArtisticCanvas,
+} from './StemIllustrations';
 
 const learningPathways = [
   {
@@ -31,6 +42,8 @@ const learningPathways = [
     name: 'Young Digital Explorers',
     ageRange: 'Ages 5 – 8',
     level: 'Foundational Discovery',
+    theme: 'amber',
+    badgeClass: 'sds-pathway-badge--amber',
     icon: Sparkles,
     tagline: 'Fostering computational thinking, digital curiosity, and creative expression through visual play.',
     focusAreas: [
@@ -47,6 +60,8 @@ const learningPathways = [
     name: 'Junior Coders & Robotics Engineers',
     ageRange: 'Ages 9 – 12',
     level: 'Applied Exploration',
+    theme: 'cyan',
+    badgeClass: 'sds-pathway-badge--cyan',
     icon: Bot,
     tagline: 'Bridging block-based logic with physical computing, microcontrollers, and real-world sensors.',
     focusAreas: [
@@ -63,6 +78,8 @@ const learningPathways = [
     name: 'Future Innovators',
     ageRange: 'Ages 13 – 16',
     level: 'Intermediate Systems',
+    theme: 'indigo',
+    badgeClass: 'sds-pathway-badge--indigo',
     icon: Cpu,
     tagline: 'Text-based programming, IoT connectivity, and applied artificial intelligence fundamentals.',
     focusAreas: [
@@ -79,6 +96,8 @@ const learningPathways = [
     name: 'Advanced Robotics & Applied AI',
     ageRange: 'Ages 16 – 18',
     level: 'Pre-University & Innovation',
+    theme: 'purple',
+    badgeClass: 'sds-pathway-badge--purple',
     icon: BrainCircuit,
     tagline: 'Advanced software engineering, computer vision, hardware prototyping, and technology entrepreneurship.',
     focusAreas: [
@@ -100,7 +119,7 @@ const deliveryModels = [
     description: 'Weekly or twice-weekly timetabled STEM sessions delivered on school grounds by SpenFel certified mentors, equipped with complete project kits and modular lesson frameworks.',
   },
   {
-    icon: Clock3Icon,
+    icon: Zap,
     title: 'After-School Technology Programmes',
     badge: 'Extracurricular Enrichment',
     description: 'Structured afternoon programmes providing high-impact robotics and coding immersion for students who want to accelerate their technical proficiency beyond standard school hours.',
@@ -130,15 +149,6 @@ const deliveryModels = [
     description: 'Designing and executing sponsored STEM initiatives in collaboration with NGOs, foundations, and corporate CSR departments to reach underserved learners and public institutions.',
   },
 ];
-
-function Clock3Icon(props) {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16.5 12" />
-    </svg>
-  );
-}
 
 const stakeholderPartnerships = [
   {
@@ -204,6 +214,8 @@ const showcaseProjects = [
     title: 'Obstacle-Avoiding Autonomous Rover',
     category: 'Robotics & Automation',
     icon: Bot,
+    illustration: RoverIllustration,
+    accent: 'cyan',
     description: 'Learners assemble a two-wheeled robotic chassis, wire HC-SR04 ultrasonic distance sensors to an Arduino, and write algorithms to detect barriers and navigate around obstacles autonomously.',
     technologies: ['Arduino Uno', 'Ultrasonic Sensors', 'L298N Motor Driver', 'C++ / Embedded C'],
   },
@@ -211,6 +223,8 @@ const showcaseProjects = [
     title: 'Smart Soil Moisture & Automated Irrigation',
     category: 'Smart Agriculture & IoT',
     icon: Sprout,
+    illustration: IrrigationIllustration,
+    accent: 'emerald',
     description: 'Connecting resistive soil sensors to an ESP32 microcontroller to trigger water pump relays automatically when soil dries out, displaying moisture telemetry on an LCD screen.',
     technologies: ['ESP32', 'Soil Moisture Sensors', 'Relay Module', 'MicroPython'],
   },
@@ -218,6 +232,8 @@ const showcaseProjects = [
     title: 'Automated Campus Lighting & Security',
     category: 'Smart Infrastructure',
     icon: Lightbulb,
+    illustration: LightingIllustration,
+    accent: 'amber',
     description: 'Building energy-efficient automated lighting using Light Dependent Resistors (LDR) and Passive Infrared (PIR) motion sensors to illuminate areas only when ambient light is low and motion is detected.',
     technologies: ['Arduino / ESP8266', 'PIR Motion Sensor', 'LDR Photocell', 'Automation Logic'],
   },
@@ -225,6 +241,8 @@ const showcaseProjects = [
     title: 'Weather & Environmental Telemetry Node',
     category: 'IoT & Climate Tech',
     icon: Cpu,
+    illustration: TelemetryIllustration,
+    accent: 'violet',
     description: 'Gathering real-time temperature, humidity, and barometric pressure data using DHT11 and BMP280 sensors, transmitting logs over WiFi/MQTT to a live web dashboard.',
     technologies: ['ESP32', 'DHT22 Sensor', 'MQTT Telemetry', 'Web Dashboard'],
   },
@@ -232,6 +250,8 @@ const showcaseProjects = [
     title: 'Interactive Python Educational Games',
     category: 'Software & Logic',
     icon: Rocket,
+    illustration: ArcadeGameIllustration,
+    accent: 'rose',
     description: 'Writing 2D interactive arcade games and puzzle solvers in Python, reinforcing coordinate geometry, physics variables, collision detection, and object-oriented programming.',
     technologies: ['Python', 'Pygame / Arcade', 'Game Physics', 'Algorithmic Logic'],
   },
@@ -239,6 +259,8 @@ const showcaseProjects = [
     title: 'Introductory AI Image & Object Classifier',
     category: 'Applied AI & Computer Vision',
     icon: BrainCircuit,
+    illustration: AiVisionIllustration,
+    accent: 'indigo',
     description: 'Training lightweight machine learning models to identify objects or gestures via a webcam, triggering physical actions or screen notifications based on visual recognition.',
     technologies: ['Python', 'Teachable Machine', 'OpenCV Basics', 'Computer Vision'],
   },
@@ -247,26 +269,32 @@ const showcaseProjects = [
 const programmeOutcomes = [
   {
     title: 'Critical Thinking & Analytical Logic',
+    icon: BrainCircuit,
     description: 'Students break down ambiguous, complex problems into structured, computable steps.',
   },
   {
     title: 'Hands-On Engineering Design',
+    icon: CircuitBoard,
     description: 'Moving beyond textbooks to understand circuits, schematics, power supplies, and mechanisms.',
   },
   {
     title: 'Professional Programming Habits',
+    icon: Rocket,
     description: 'Gaining fluency in syntax, logic flow, modular functions, debugging, and clean code principles.',
   },
   {
     title: 'Collaborative Problem-Solving',
+    icon: Users,
     description: 'Working in peer teams where different roles (coder, builder, documenter, tester) combine to ship projects.',
   },
   {
     title: 'Curiosity & Creative Confidence',
+    icon: Palette,
     description: 'Demystifying technology so youth view everyday systems as things they can analyze, repair, and reinvent.',
   },
   {
     title: 'Innovation & Entrepreneurship Mindset',
+    icon: Lightbulb,
     description: 'Encouraging learners to identify community challenges in Malawi and engineer practical digital solutions.',
   },
 ];
@@ -275,30 +303,45 @@ export default function StemRoboticsPage() {
   const revealRef = useCardReveal();
 
   return (
-    <div className="sds-stem-page" ref={revealRef}>
+    <div className="sds-stem-page sds-creative-mode" ref={revealRef}>
+      {/* Top Creativity Ribbon */}
+      <div className="sds-creative-ribbon" role="region" aria-label="Creativity Mode Indicator">
+        <div className="sds-container sds-creative-ribbon__inner">
+          <div className="sds-creative-ribbon__left">
+            <span className="sds-creative-pulsar" aria-hidden="true" />
+            <Sparkles size={14} className="sds-creative-ribbon__icon" aria-hidden="true" />
+            <strong>CREATIVITY &amp; INNOVATION MODE ACTIVE</strong>
+          </div>
+          <span className="sds-creative-ribbon__right">
+            SpenFel STEM &amp; Robotics Academy • Dedicated Education Division
+          </span>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="sds-stem-hero">
+      <section className="sds-stem-hero sds-creative-hero">
+        <div className="sds-creative-hero__bg-grid" aria-hidden="true" />
         <div className="sds-container sds-stem-hero__inner">
           <div className="sds-stem-hero__copy" data-card-reveal>
-            <div className="sds-stem-badge">
-              <span className="sds-stem-badge__dot" aria-hidden="true" />
-              <span>SPENFEL FLAGSHIP EDUCATION INITIATIVE</span>
+            <div className="sds-stem-badge sds-stem-badge--creative">
+              <span className="sds-stem-badge__dot sds-stem-badge__dot--pulse" aria-hidden="true" />
+              <span>FLAGSHIP EDUCATION INITIATIVE</span>
             </div>
-            <h1>
-              Empowering the Next Generation of <em>African Innovators.</em>
+            <h1 className="sds-creative-hero__title">
+              Empowering the Next Generation of <span className="sds-gradient-text">African Innovators.</span>
             </h1>
             <p className="sds-stem-hero__lead">
               We bring practical STEM education, coding, robotics and emerging technologies directly to schools and communities, helping young people develop the technical skills and creativity needed to shape the future.
             </p>
             <div className="sds-stem-hero__actions">
-              <a href="#partnership-enquiry" className="sds-button sds-button--green">
+              <a href="#partnership-enquiry" className="sds-button sds-button--stem">
                 Partner With Us <ArrowDownRight size={17} aria-hidden="true" />
               </a>
-              <a href="#learning-pathways" className="sds-button sds-button--outline">
+              <a href="#learning-pathways" className="sds-button sds-button--stem-outline">
                 Explore Our Programmes <ArrowRight size={16} aria-hidden="true" />
               </a>
             </div>
-            <div className="sds-stem-hero__meta">
+            <div className="sds-stem-hero__meta sds-stem-hero__meta--creative">
               <div>
                 <strong>Ages 5 – 18</strong>
                 <span>4 Learning Pathways</span>
@@ -317,47 +360,20 @@ export default function StemRoboticsPage() {
           </div>
 
           <div className="sds-stem-hero__visual" data-card-reveal aria-hidden="true">
-            <div className="sds-stem-hero__board">
-              <div className="sds-stem-hero__board-header">
-                <span className="sds-stem-hero__board-title">STEM &amp; ROBOTICS ACADEMY</span>
-                <span className="sds-stem-hero__board-chip">CURRICULUM SUITE</span>
-              </div>
-              <div className="sds-stem-hero__nodes">
-                <div className="sds-stem-node sds-stem-node--active">
-                  <Bot size={22} />
-                  <span>Robotics &amp; Motors</span>
-                </div>
-                <div className="sds-stem-node">
-                  <CircuitBoard size={22} />
-                  <span>Arduino &amp; ESP32</span>
-                </div>
-                <div className="sds-stem-node">
-                  <BrainCircuit size={22} />
-                  <span>AI Fundamentals</span>
-                </div>
-                <div className="sds-stem-node">
-                  <Sprout size={22} />
-                  <span>Smart Agriculture</span>
-                </div>
-              </div>
-              <div className="sds-stem-hero__board-footer">
-                <span>From consuming technology to building it</span>
-                <span className="sds-stem-hero__status">LAB READY</span>
-              </div>
-            </div>
+            <LabHeroArtisticCanvas />
           </div>
         </div>
       </section>
 
       {/* Programme Introduction */}
-      <section className="sds-stem-intro sds-section">
+      <section className="sds-stem-intro sds-section sds-creative-intro">
         <div className="sds-container">
           <div className="sds-section-heading sds-section-heading--split" data-card-reveal>
             <div>
-              <p className="sds-eyebrow sds-eyebrow--dark">The Education Challenge</p>
+              <p className="sds-eyebrow sds-eyebrow--creative">The Education Challenge</p>
               <h2>
                 Beyond Technology Consumption.<br />
-                <em>Empowering Creators &amp; Builders.</em>
+                <em className="sds-creative-em">Empowering Creators &amp; Builders.</em>
               </h2>
             </div>
             <p>
@@ -366,8 +382,8 @@ export default function StemRoboticsPage() {
           </div>
 
           <div className="sds-stem-intro__grid">
-            <article className="sds-stem-intro__card" data-card-reveal>
-              <div className="sds-stem-intro__icon">
+            <article className="sds-stem-intro__card sds-creative-card sds-creative-card--amber" data-card-reveal>
+              <div className="sds-stem-intro__icon sds-cicon--amber">
                 <Lightbulb size={22} />
               </div>
               <h3>Why Practical STEM Matters in Malawi</h3>
@@ -376,8 +392,8 @@ export default function StemRoboticsPage() {
               </p>
             </article>
 
-            <article className="sds-stem-intro__card" data-card-reveal>
-              <div className="sds-stem-intro__icon">
+            <article className="sds-stem-intro__card sds-creative-card sds-creative-card--cyan" data-card-reveal>
+              <div className="sds-stem-intro__icon sds-cicon--cyan">
                 <School size={22} />
               </div>
               <h3>How SpenFel Solves Institutional Gaps</h3>
@@ -386,8 +402,8 @@ export default function StemRoboticsPage() {
               </p>
             </article>
 
-            <article className="sds-stem-intro__card" data-card-reveal>
-              <div className="sds-stem-intro__icon">
+            <article className="sds-stem-intro__card sds-creative-card sds-creative-card--indigo" data-card-reveal>
+              <div className="sds-stem-intro__icon sds-cicon--indigo">
                 <Cpu size={22} />
               </div>
               <h3>Grounding Innovation in Local Relevance</h3>
@@ -400,12 +416,12 @@ export default function StemRoboticsPage() {
       </section>
 
       {/* Learning Pathways */}
-      <section id="learning-pathways" className="sds-stem-pathways sds-section">
+      <section id="learning-pathways" className="sds-stem-pathways sds-section sds-creative-pathways">
         <div className="sds-container">
           <div className="sds-section-heading" data-card-reveal>
-            <p className="sds-eyebrow sds-eyebrow--dark">Structured Curriculum</p>
+            <p className="sds-eyebrow sds-eyebrow--creative">Structured Curriculum</p>
             <h2>
-              Four Progressive <em>Learning Pathways.</em>
+              Four Progressive <em className="sds-creative-em">Learning Pathways.</em>
             </h2>
             <p>
               Our proposed pathways are developmentally staged to meet learners where they are, scaffolding confidence from early visual logic through to physical robotics and applied artificial intelligence.
@@ -416,13 +432,17 @@ export default function StemRoboticsPage() {
             {learningPathways.map((pathway) => {
               const Icon = pathway.icon;
               return (
-                <article className="sds-stem-pathway" key={pathway.name} data-card-reveal>
+                <article
+                  className={`sds-stem-pathway sds-cpathway sds-cpathway--${pathway.theme}`}
+                  key={pathway.name}
+                  data-card-reveal
+                >
                   <div className="sds-stem-pathway__top">
                     <span className="sds-stem-pathway__stage">{pathway.stage}</span>
-                    <span className="sds-stem-pathway__age">{pathway.ageRange}</span>
+                    <span className={`sds-pathway-badge ${pathway.badgeClass}`}>{pathway.ageRange}</span>
                   </div>
                   <div className="sds-stem-pathway__header">
-                    <span className="sds-stem-pathway__icon" aria-hidden="true">
+                    <span className={`sds-stem-pathway__icon sds-cicon--${pathway.theme}`} aria-hidden="true">
                       <Icon size={24} />
                     </span>
                     <div>
@@ -458,14 +478,67 @@ export default function StemRoboticsPage() {
         </div>
       </section>
 
-      {/* Institutional Delivery Models */}
-      <section className="sds-stem-models sds-section">
+      {/* Practical Learning Showcase (With Illustrated Placeholders!) */}
+      <section className="sds-stem-showcase sds-section sds-creative-showcase">
         <div className="sds-container">
           <div className="sds-section-heading sds-section-heading--split" data-card-reveal>
             <div>
-              <p className="sds-eyebrow sds-eyebrow--dark">Institutional Engagement</p>
+              <p className="sds-eyebrow sds-eyebrow--creative">Project-Based Learning</p>
               <h2>
-                Flexible Models for <em>Schools &amp; Organisations.</em>
+                Prototypes &amp; Projects <em className="sds-creative-em">Learners Build.</em>
+              </h2>
+            </div>
+            <p>
+              Instead of rote memorisation, students learn by assembling, testing, coding, and refining functional physical systems. Here are representative examples of practical project activities.
+            </p>
+          </div>
+
+          <div className="sds-stem-showcase__grid">
+            {showcaseProjects.map((project) => {
+              const Icon = project.icon;
+              const Illustration = project.illustration;
+              return (
+                <article
+                  className={`sds-stem-project-card sds-cproject-card sds-cproject-card--${project.accent}`}
+                  key={project.title}
+                  data-card-reveal
+                >
+                  {/* Visual Placeholder Art Plate */}
+                  <div className="sds-cproject-card__art-container">
+                    <Illustration />
+                  </div>
+
+                  <div className="sds-cproject-card__body">
+                    <div className="sds-stem-project-card__top">
+                      <span className="sds-stem-project-card__cat">{project.category}</span>
+                      <Icon size={20} className="sds-cproject-icon" aria-hidden="true" />
+                    </div>
+                    <h3>{project.title}</h3>
+                    <p>{project.description}</p>
+                    <div className="sds-stem-project-card__tech">
+                      {project.technologies.map((t) => (
+                        <span key={t} className="sds-stem-chip">{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <p className="sds-stem-showcase__disclaimer" data-card-reveal>
+            Note: Projects are presented as illustrative learning activities and prototype examples included in curriculum planning, adapted to learner age and available lab equipment.
+          </p>
+        </div>
+      </section>
+
+      {/* Institutional Delivery Models */}
+      <section className="sds-stem-models sds-section sds-creative-models">
+        <div className="sds-container">
+          <div className="sds-section-heading sds-section-heading--split" data-card-reveal>
+            <div>
+              <p className="sds-eyebrow sds-eyebrow--creative">Institutional Engagement</p>
+              <h2>
+                Flexible Models for <em className="sds-creative-em">Schools &amp; Organisations.</em>
               </h2>
             </div>
             <p>
@@ -475,13 +548,15 @@ export default function StemRoboticsPage() {
 
           <div className="sds-stem-models__grid">
             {deliveryModels.map(({ icon: Icon, title, badge, description }, index) => (
-              <article className="sds-stem-model" key={title} data-card-reveal>
+              <article className="sds-stem-model sds-cmodel-card" key={title} data-card-reveal>
                 <div className="sds-stem-model__header">
                   <span className="sds-stem-model__number">0{index + 1}</span>
-                  <span className="sds-stem-model__badge">{badge}</span>
+                  <span className="sds-cmodel-badge">{badge}</span>
                 </div>
                 <div className="sds-stem-model__title-row">
-                  <Icon size={20} className="text-sds-green" aria-hidden="true" />
+                  <div className="sds-cmodel-icon-box">
+                    <Icon size={19} aria-hidden="true" />
+                  </div>
                   <h3>{title}</h3>
                 </div>
                 <p>{description}</p>
@@ -492,12 +567,12 @@ export default function StemRoboticsPage() {
       </section>
 
       {/* Institutional Partnership Stakeholder Section */}
-      <section className="sds-stem-stakeholders sds-section">
+      <section className="sds-stem-stakeholders sds-section sds-creative-stakeholders">
         <div className="sds-container">
           <div className="sds-section-heading" data-card-reveal>
-            <p className="sds-eyebrow sds-eyebrow--dark">Collaborate With SpenFel</p>
+            <p className="sds-eyebrow sds-eyebrow--creative">Collaborate With SpenFel</p>
             <h2>
-              Tailored Collaboration for <em>Every Stakeholder.</em>
+              Tailored Collaboration for <em className="sds-creative-em">Every Stakeholder.</em>
             </h2>
             <p>
               Discover how SpenFel structures partnerships with private institutions, public authorities, non-profits, and corporate sponsors.
@@ -508,9 +583,9 @@ export default function StemRoboticsPage() {
             {stakeholderPartnerships.map((item) => {
               const Icon = item.icon;
               return (
-                <article className="sds-stem-stakeholder" key={item.type} data-card-reveal>
-                  <div className="sds-stem-stakeholder__banner">
-                    <div className="sds-stem-stakeholder__icon-box">
+                <article className="sds-stem-stakeholder sds-cstakeholder" key={item.type} data-card-reveal>
+                  <div className="sds-stem-stakeholder__banner sds-cstakeholder__banner">
+                    <div className="sds-stem-stakeholder__icon-box sds-cstakeholder__icon-box">
                       <Icon size={24} aria-hidden="true" />
                     </div>
                     <div>
@@ -537,7 +612,7 @@ export default function StemRoboticsPage() {
 
                     <a
                       href="#partnership-enquiry"
-                      className="sds-button sds-button--outline sds-stem-stakeholder__btn"
+                      className="sds-button sds-button--stem-outline sds-stem-stakeholder__btn"
                     >
                       {item.ctaText} <ArrowUpRight size={16} aria-hidden="true" />
                     </a>
@@ -549,54 +624,13 @@ export default function StemRoboticsPage() {
         </div>
       </section>
 
-      {/* Practical Learning Showcase */}
-      <section className="sds-stem-showcase sds-section">
-        <div className="sds-container">
-          <div className="sds-section-heading sds-section-heading--split" data-card-reveal>
-            <div>
-              <p className="sds-eyebrow sds-eyebrow--dark">Project-Based Learning</p>
-              <h2>
-                Prototypes &amp; Projects <em>Learners Build.</em>
-              </h2>
-            </div>
-            <p>
-              Instead of rote memorisation, students learn by assembling, testing, coding, and refining functional physical systems. Here are representative examples of practical project activities.
-            </p>
-          </div>
-
-          <div className="sds-stem-showcase__grid">
-            {showcaseProjects.map((project) => {
-              const Icon = project.icon;
-              return (
-                <article className="sds-stem-project-card" key={project.title} data-card-reveal>
-                  <div className="sds-stem-project-card__top">
-                    <span className="sds-stem-project-card__cat">{project.category}</span>
-                    <Icon size={20} className="text-sds-green" aria-hidden="true" />
-                  </div>
-                  <h3>{project.title}</h3>
-                  <p>{project.description}</p>
-                  <div className="sds-stem-project-card__tech">
-                    {project.technologies.map((t) => (
-                      <span key={t} className="sds-stem-chip">{t}</span>
-                    ))}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-          <p className="sds-stem-showcase__disclaimer" data-card-reveal>
-            Note: Projects are presented as illustrative learning activities and prototype examples included in curriculum planning, adapted to learner age and available lab equipment.
-          </p>
-        </div>
-      </section>
-
       {/* Programme Outcomes */}
-      <section className="sds-stem-outcomes sds-section">
+      <section className="sds-stem-outcomes sds-section sds-creative-outcomes">
         <div className="sds-container">
           <div className="sds-section-heading" data-card-reveal>
-            <p className="sds-eyebrow sds-eyebrow--dark">Measurable Growth</p>
+            <p className="sds-eyebrow sds-eyebrow--creative">Measurable Growth</p>
             <h2>
-              Core Competencies Developed in <em>Every Student.</em>
+              Core Competencies Developed in <em className="sds-creative-em">Every Student.</em>
             </h2>
             <p>
               Our educational framework balances technical mastery with cognitive and collaborative problem-solving skills that serve learners for life.
@@ -604,23 +638,29 @@ export default function StemRoboticsPage() {
           </div>
 
           <div className="sds-stem-outcomes__grid">
-            {programmeOutcomes.map((outcome, idx) => (
-              <div className="sds-stem-outcome" key={outcome.title} data-card-reveal>
-                <span className="sds-stem-outcome__index">0{idx + 1}</span>
-                <h3>{outcome.title}</h3>
-                <p>{outcome.description}</p>
-              </div>
-            ))}
+            {programmeOutcomes.map((outcome, idx) => {
+              const Icon = outcome.icon;
+              return (
+                <div className="sds-stem-outcome sds-coutcome-card" key={outcome.title} data-card-reveal>
+                  <div className="sds-coutcome-header">
+                    <span className="sds-stem-outcome__index">0{idx + 1}</span>
+                    <Icon size={18} className="sds-coutcome-icon" aria-hidden="true" />
+                  </div>
+                  <h3>{outcome.title}</h3>
+                  <p>{outcome.description}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Call to Action Section with Embedded Enquiry Form */}
-      <section className="sds-stem-cta-section sds-section">
+      <section id="partnership-enquiry" className="sds-stem-cta-section sds-section sds-creative-cta">
         <div className="sds-container">
           <div className="sds-stem-cta-header" data-card-reveal>
-            <p className="sds-eyebrow sds-eyebrow--dark">Start the Conversation</p>
-            <h2>Bring STEM, Robotics and Innovation to <em>Your Institution.</em></h2>
+            <p className="sds-eyebrow sds-eyebrow--creative">Start the Conversation</p>
+            <h2>Bring STEM, Robotics and Innovation to <em className="sds-creative-em">Your Institution.</em></h2>
             <p>
               Whether you are a private school head seeking a flagship robotics club, an education official discussing district collaboration, or an NGO planning a funded digital inclusion project, we invite you to discuss programme implementation with our team.
             </p>

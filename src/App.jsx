@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { recordPageView } from './analytics';
 import Hero from './components/Hero';
 import About from './components/About';
@@ -147,7 +147,7 @@ function App() {
         <Route path="/" element={<CorporateSite page="home" />} />
         <Route path="/stem-robotics-education" element={<CorporateSite page="stem" />} />
         <Route path="/stem-robotics-academy" element={<CorporateSite page="stem" />} />
-        <Route path="/partnerships" element={<CorporateSite page="partnerships" />} />
+        <Route path="/partnerships" element={<Navigate to="/stem-robotics-education#partnership-enquiry" replace />} />
         <Route path="/training" element={<CorporateSite page="training" />} />
         <Route path="/digital-skills-lab" element={<CorporateSite page="skills-lab" />} />
         <Route path="/portfolio/*" element={<PortfolioSite />} />

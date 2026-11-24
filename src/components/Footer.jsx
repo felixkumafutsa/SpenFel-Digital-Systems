@@ -22,7 +22,7 @@ const Footer = () => {
           <h2>Education &amp; Innovation</h2>
           <a href="/stem-robotics-education">STEM &amp; Robotics Academy</a>
           <a href="/training">Digital Skills Lab</a>
-          <a href="/partnerships">Institutional Partnerships</a>
+          <a href="/stem-robotics-education#partnership-enquiry">Institutional Partnerships</a>
           <a href={sectionHref('services')}>Digital Solutions</a>
           <a href={sectionHref('about')}>About SDS</a>
         </div>
