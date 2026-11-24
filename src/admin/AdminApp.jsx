@@ -23,6 +23,7 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   AlertCircle,
+  BookOpen,
   Briefcase,
   Check,
   ChevronDown,
@@ -48,13 +49,15 @@ import {
 } from 'lucide-react';
 import { auth, db, firebaseConfigured, storage } from '../firebase';
 import { defaultProjects, defaultServices, defaultTrainingPrograms } from '../data/siteContent';
+import { defaultCourses } from '../data/coursesData';
 import './admin.css';
 
 const navigation = [
   { id: 'overview', label: 'Overview', path: '/admin', icon: LayoutDashboard },
   { id: 'messages', label: 'Messages', path: '/admin/messages', icon: MessageSquare },
   { id: 'newsletter', label: 'Newsletter', path: '/admin/newsletter', icon: Mail },
-  { id: 'training-programs', label: 'Training', path: '/admin/training', icon: GraduationCap },
+  { id: 'courses', label: 'Course Catalogue', path: '/admin/courses', icon: BookOpen },
+  { id: 'training-programs', label: 'Training Cohorts', path: '/admin/training', icon: GraduationCap },
   { id: 'training-requests', label: 'Training requests', path: '/admin/training-requests', icon: ClipboardList },
   { id: 'projects', label: 'Projects', path: '/admin/projects', icon: Briefcase },
   { id: 'services', label: 'Services', path: '/admin/services', icon: Wrench },
@@ -318,6 +321,7 @@ function AdminWorkspace({ user, onSignOut, mobileNavOpen, setMobileNavOpen }) {
           {activeSection === 'overview' && <Overview />}
           {activeSection === 'messages' && <MessagesPage />}
           {activeSection === 'newsletter' && <NewsletterPage />}
+          {activeSection === 'courses' && <CollectionManager collectionName="courses" title="Courses" description="Manage the 17 professional Skills Lab courses, descriptions, curriculum, and categories." defaults={defaultCourses} />}
           {activeSection === 'training-programs' && <TrainingProgramsPage />}
           {activeSection === 'training-requests' && <TrainingRequestsPage />}
           {activeSection === 'projects' && <CollectionManager collectionName="projects" title="Projects" description="Manage the work and products shown in the public portfolio." defaults={defaultProjects} />}

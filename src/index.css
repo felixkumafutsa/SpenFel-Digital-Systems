@@ -6850,3 +6850,954 @@ a.sds-contact__card:hover > svg:last-child {
   }
 }
 
+/* ==========================================================================
+   SPENFEL DIGITAL SKILLS LAB: COURSE CATALOGUE & DETAIL VIEWS
+   ========================================================================== */
+
+/* --- Catalogue Header & Search Bar --- */
+.sds-catalogue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.sds-catalogue-header h2 {
+  margin: 4px 0 8px;
+  color: var(--sds-navy);
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 750;
+  letter-spacing: -.03em;
+}
+
+.sds-catalogue-header__sub {
+  margin: 0;
+  color: var(--sds-muted);
+  font-size: 15px;
+  max-width: 680px;
+  line-height: 1.6;
+}
+
+.sds-mobile-filter-trigger {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 6px;
+  background: var(--skills-azure);
+  color: #fff;
+  border: none;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.sds-catalogue-search-bar {
+  margin-bottom: 30px;
+}
+
+.sds-search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.sds-search-icon {
+  position: absolute;
+  left: 16px;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.sds-search-input {
+  width: 100%;
+  padding: 14px 44px 14px 46px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 14.5px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.sds-search-input:focus {
+  outline: none;
+  border-color: var(--skills-azure);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.sds-search-clear {
+  position: absolute;
+  right: 14px;
+  padding: 4px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sds-search-clear:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+/* Category Quick Tabs */
+.sds-category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.sds-cat-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.sds-cat-tab:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+}
+
+.sds-cat-tab.is-active {
+  background: #1e3a8a;
+  border-color: #1e3a8a;
+  color: #fff;
+}
+
+.sds-cat-tab__count {
+  display: inline-grid;
+  place-items: center;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+}
+
+.sds-cat-tab.is-active .sds-cat-tab__count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+/* --- Catalogue Layout Grid --- */
+.sds-catalogue-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+/* Sidebar Filters */
+.sds-catalogue-sidebar {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 22px 20px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
+}
+
+.sds-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sds-sidebar-header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 750;
+  color: var(--sds-navy);
+}
+
+.sds-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--skills-azure);
+  font-size: 11.5px;
+  font-weight: 650;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.sds-reset-btn:hover {
+  text-decoration: underline;
+}
+
+.sds-sidebar-close {
+  display: none;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.sds-filter-group {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sds-filter-group:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.sds-filter-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #1e3a8a;
+  margin-bottom: 10px;
+}
+
+.sds-filter-select {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 5px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.sds-filter-select:focus {
+  border-color: var(--skills-azure);
+  background: #fff;
+}
+
+.sds-filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.sds-filter-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #334155;
+  cursor: pointer;
+}
+
+.sds-filter-radio input[type="radio"] {
+  accent-color: var(--skills-azure);
+  cursor: pointer;
+}
+
+/* Results Content */
+.sds-catalogue-results {
+  min-width: 0;
+}
+
+.sds-results-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.sds-results-count {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.sds-results-count strong {
+  color: #0f172a;
+}
+
+.sds-active-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sds-active-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.sds-active-chip button {
+  background: none;
+  border: none;
+  color: #0284c7;
+  padding: 0;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.sds-active-chip button:hover {
+  color: #0369a1;
+}
+
+.sds-clear-all-text {
+  background: none;
+  border: none;
+  color: var(--skills-azure);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.sds-clear-all-text:hover {
+  text-decoration: underline;
+}
+
+/* Courses Grid */
+.sds-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.sds-catalogue-empty {
+  padding: 56px 24px;
+  text-align: center;
+  background: #fff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+}
+
+.sds-catalogue-empty h3 {
+  margin: 0 0 8px;
+  color: var(--sds-navy);
+  font-size: 18px;
+}
+
+.sds-catalogue-empty p {
+  color: #64748b;
+  font-size: 13.5px;
+  margin: 0 auto 20px;
+  max-width: 440px;
+  line-height: 1.6;
+}
+
+/* --- Course Card Styling --- */
+.sds-course-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.035);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.sds-course-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px rgba(30, 58, 138, 0.08);
+  border-color: #93c5fd;
+}
+
+.sds-course-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+  color: #fff;
+  border-bottom: 2px solid rgba(37, 99, 235, 0.3);
+}
+
+.sds-course-header--digital-productivity-workplace-skills { background: linear-gradient(135deg, #172554 0%, #1e40af 100%) !important; }
+.sds-course-header--artificial-intelligence-automation { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%) !important; }
+.sds-course-header--data-analytics-research { background: linear-gradient(135deg, #134e4a 0%, #0f766e 100%) !important; }
+.sds-course-header--digital-business-entrepreneurship { background: linear-gradient(135deg, #78350f 0%, #b45309 100%) !important; }
+.sds-course-header--software-development-it { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important; }
+.sds-course-header--cybersecurity-digital-safety { background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important; }
+.sds-course-header--emerging-technologies-digital-transformation { background: linear-gradient(135deg, #064e3b 0%, #047857 100%) !important; }
+
+.sds-course-card__icon-box {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sds-course-card__meta-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sds-course-card__cat {
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.sds-course-card__body {
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.sds-course-card__badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.sds-course-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+.sds-course-badge--mode {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sds-course-badge--format {
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.sds-course-badge--featured {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.sds-course-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  align-self: flex-start;
+}
+
+.sds-course-pill--foundation { background: #dbeafe; color: #1e40af; }
+.sds-course-pill--intermediate { background: #fef3c7; color: #92400e; }
+.sds-course-pill--professional { background: #e0e7ff; color: #3730a3; }
+.sds-course-pill--category { background: #eff6ff; color: #1e3a8a; }
+.sds-course-pill--neutral { background: #f1f5f9; color: #334155; }
+
+.sds-course-card__title {
+  margin: 0 0 10px;
+  font-size: 17.5px;
+  font-weight: 750;
+  line-height: 1.3;
+}
+
+.sds-course-card__title a {
+  color: var(--sds-navy);
+  text-decoration: none;
+  transition: color .15s ease;
+}
+
+.sds-course-card__title a:hover {
+  color: var(--skills-azure);
+}
+
+.sds-course-card__description {
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.sds-course-card__tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.sds-course-card__tools-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.sds-course-chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.sds-course-chip {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sds-course-chip--more {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.sds-course-chip--audience {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.sds-course-chip--lg {
+  padding: 4px 10px;
+  font-size: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.sds-course-card__actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: auto;
+}
+
+.sds-course-card__btn-view {
+  flex: 1 1 auto;
+  justify-content: center;
+  padding: 9px 14px !important;
+  font-size: 12.5px !important;
+}
+
+.sds-course-card__btn-enquire {
+  flex: 0 0 auto;
+  padding: 9px 16px !important;
+  font-size: 12.5px !important;
+}
+
+/* ==========================================================================
+   COURSE DETAIL PAGE VIEW
+   ========================================================================== */
+.sds-course-detail-view {
+  background: #f8fafc;
+}
+
+.sds-course-breadcrumbs {
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px 0;
+  font-size: 12px;
+}
+
+.sds-course-breadcrumbs__inner {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  color: #64748b;
+}
+
+.sds-course-breadcrumbs a {
+  color: #475569;
+  text-decoration: none;
+  font-weight: 550;
+}
+
+.sds-course-breadcrumbs a:hover {
+  color: var(--skills-azure);
+}
+
+.sds-course-breadcrumbs span.is-active {
+  color: #0f172a;
+  font-weight: 650;
+}
+
+.sds-course-hero {
+  background:
+    radial-gradient(circle at 85% 20%, rgba(37, 99, 235, 0.25), transparent 45%),
+    #0f172a;
+  color: #fff;
+  padding: 48px 0 54px;
+}
+
+.sds-course-hero__pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sds-course-hero__title {
+  margin: 0 0 16px;
+  color: #fff;
+  font-size: clamp(30px, 4vw, 44px);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1.15;
+  max-width: 860px;
+}
+
+.sds-course-hero__lead {
+  margin: 0 0 28px;
+  color: rgba(224, 231, 255, 0.85);
+  font-size: clamp(15px, 1.8vw, 17px);
+  line-height: 1.65;
+  max-width: 800px;
+}
+
+.sds-course-hero__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Detail Main Grid */
+.sds-course-main__grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 36px;
+  align-items: start;
+}
+
+.sds-course-main__col-content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sds-course-card-detail {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 28px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
+}
+
+.sds-course-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  font-size: 18px;
+  font-weight: 750;
+  color: var(--sds-navy);
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+}
+
+.sds-csection-icon {
+  color: var(--skills-azure);
+}
+
+.sds-course-prose p {
+  margin: 0 0 16px;
+  color: #334155;
+  font-size: 14.5px;
+  line-height: 1.75;
+}
+
+.sds-course-outcomes-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sds-course-outcomes-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sds-outcome-check {
+  color: #059669;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Curriculum Modules */
+.sds-course-curriculum {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sds-curriculum-module {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 18px 20px;
+  background: #fafbfc;
+}
+
+.sds-curriculum-module__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sds-curriculum-module__num {
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.sds-curriculum-module__header h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--sds-navy);
+}
+
+.sds-curriculum-topics {
+  list-style: disc;
+  padding-left: 44px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sds-curriculum-topics li {
+  color: #475569;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+/* Practical Projects */
+.sds-course-projects-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sds-course-project-badge {
+  padding: 14px 16px;
+  border-radius: 6px;
+  background: #f0fdf4;
+  border-left: 3px solid #16a34a;
+}
+
+.sds-course-project-num {
+  display: block;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #15803d;
+  margin-bottom: 4px;
+}
+
+.sds-course-project-badge p {
+  margin: 0;
+  color: #1e293b;
+  font-size: 13.5px;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+/* Sidebar Facts Card */
+.sds-course-sidebar-card {
+  position: sticky;
+  top: 96px;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-top: 4px solid var(--skills-azure);
+  border-radius: 8px;
+  padding: 26px 24px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.05);
+}
+
+.sds-sidebar-card-title {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 750;
+  color: var(--sds-navy);
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+.sds-course-sidebar-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 0 22px;
+}
+
+.sds-course-sidebar-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sds-course-sidebar-facts dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #64748b;
+}
+
+.sds-course-sidebar-facts dd {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 650;
+  color: #0f172a;
+}
+
+.sds-sidebar-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.sds-sidebar-card-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 6px;
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  color: #1e3a8a;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Related Courses Section */
+.sds-course-related-section {
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+}
+
+/* ==========================================================================
+   Responsive Adaptations for Catalogue & Detail View
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .sds-catalogue-layout {
+    grid-template-columns: 240px 1fr;
+    gap: 24px;
+  }
+
+  .sds-course-main__grid {
+    grid-template-columns: 1fr 300px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 880px) {
+  .sds-catalogue-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sds-mobile-filter-trigger {
+    display: inline-flex;
+  }
+
+  .sds-catalogue-sidebar {
+    display: none;
+  }
+
+  .sds-catalogue-sidebar.is-open {
+    display: block;
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    overflow-y: auto;
+    border-radius: 0;
+    padding: 24px 20px;
+  }
+
+  .sds-sidebar-close {
+    display: inline-flex;
+  }
+
+  .sds-course-main__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sds-course-sidebar-card {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .sds-courses-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sds-course-hero {
+    padding: 36px 0 40px;
+  }
+}
+
+

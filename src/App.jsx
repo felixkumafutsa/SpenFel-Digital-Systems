@@ -7,6 +7,7 @@ import StemRoboticsPreview from './components/StemRoboticsPreview';
 import Services from './components/Services';
 import InstitutionalApproach from './components/InstitutionalApproach';
 import TrainingPage from './components/TrainingPage';
+import CourseDetailPage from './components/CourseDetailPage';
 import StemRoboticsPage from './components/StemRoboticsPage';
 import PartnershipsPage from './components/PartnershipsPage';
 import Portfolio from './components/Portfolio';
@@ -81,6 +82,8 @@ function CorporateSite({ page = 'home' }) {
       <main>
         {page === 'stem' ? (
           <StemRoboticsPage />
+        ) : page === 'course-detail' ? (
+          <CourseDetailPage />
         ) : page === 'partnerships' ? (
           <PartnershipsPage />
         ) : page === 'training' || page === 'skills-lab' ? (
@@ -148,7 +151,10 @@ function App() {
         <Route path="/stem-robotics-education" element={<CorporateSite page="stem" />} />
         <Route path="/stem-robotics-academy" element={<CorporateSite page="stem" />} />
         <Route path="/partnerships" element={<Navigate to="/stem-robotics-education#partnership-enquiry" replace />} />
+        <Route path="/skills-lab" element={<CorporateSite page="skills-lab" />} />
+        <Route path="/skills-lab/courses/:slug" element={<CorporateSite page="course-detail" />} />
         <Route path="/training" element={<CorporateSite page="training" />} />
+        <Route path="/training/courses/:slug" element={<CorporateSite page="course-detail" />} />
         <Route path="/digital-skills-lab" element={<CorporateSite page="skills-lab" />} />
         <Route path="/portfolio/*" element={<PortfolioSite />} />
         <Route path="/admin/*" element={<AdminApp />} />

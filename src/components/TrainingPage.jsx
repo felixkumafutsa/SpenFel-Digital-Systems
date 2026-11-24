@@ -1,318 +1,200 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { addDoc, collection, onSnapshot, query, serverTimestamp, where } from 'firebase/firestore';
+import React, { useEffect, useMemo, useState } from 'react';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import {
   AlertCircle,
   ArrowRight,
   ArrowUpRight,
-  CalendarDays,
+  BarChart3,
+  BookOpen,
+  BrainCircuit,
+  Building2,
+  Check,
   CheckCircle2,
-  Clock3,
+  Code2,
+  Filter,
+  Globe2,
   GraduationCap,
   Laptop,
+  Layers,
   Loader2,
-  MapPin,
-  Monitor,
-  Send,
+  MessageCircle,
+  RotateCcw,
+  Search,
+  ShieldCheck,
   Sparkles,
+  TrendingUp,
   Users,
-  Wallet,
   X,
 } from 'lucide-react';
 import { db } from '../firebase';
-import { defaultTrainingPrograms } from '../data/siteContent';
+import { courseCategories, defaultCourses } from '../data/coursesData';
+import CourseCard from './CourseCard';
+import CourseEnquiryModal from './CourseEnquiryModal';
+import useCardReveal from './useCardReveal';
 
-const deliveryLabels = {
-  online: 'Online Classroom',
-  in_person: 'In-Person Lab',
-  hybrid: 'Hybrid (Lab & Online)',
-};
+const audienceOptions = [
+  'Students and Graduates',
+  'Job Seekers',
+  'Professionals',
+  'Entrepreneurs and Business Owners',
+  'Organisations and Institutions',
+];
 
-const formatDate = (value) => {
-  if (!value) return '';
-  const date = new Date(`${value}T00:00:00`);
-  return Number.isNaN(date.getTime())
-    ? value
-    : date.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-};
-
-function TrainingRequestDialog({ program, type, onClose }) {
-  const [values, setValues] = useState({ name: '', email: '', phone: '', note: '' });
-  const [status, setStatus] = useState({ type: '', message: '' });
-  const [submitting, setSubmitting] = useState(false);
-
-  const updateValue = (event) => {
-    setValues((current) => ({ ...current, [event.target.name]: event.target.value }));
-  };
-
-  const submitRequest = async (event) => {
-    event.preventDefault();
-    if (!values.name.trim() || !values.email.trim() || !values.phone.trim()) {
-      setStatus({ type: 'error', message: 'Please complete your name, email, and phone number.' });
-      return;
-    }
-
-    setSubmitting(true);
-    setStatus({ type: '', message: '' });
-    try {
-      if (db) {
-        await addDoc(collection(db, 'trainingRequests'), {
-          trainingId: program.id,
-          trainingTitle: program.title,
-          type,
-          name: values.name.trim(),
-          email: values.email.trim(),
-          phone: values.phone.trim(),
-          note: values.note.trim(),
-          createdAt: serverTimestamp(),
-        });
-      } else {
-        const mailto = `mailto:support@spenfeldigtal.com?subject=Training Enquiry: ${encodeURIComponent(program.title)}&body=Name: ${encodeURIComponent(values.name)}%0APhone: ${encodeURIComponent(values.phone)}%0AEmail: ${encodeURIComponent(values.email)}%0ANotes: ${encodeURIComponent(values.note)}`;
-        window.location.href = mailto;
-      }
-
-      setStatus({
-        type: 'success',
-        message: type === 'enrollment'
-          ? 'Your enrolment request has been received. Our admissions team will contact you to confirm your seat.'
-          : 'Your enquiry has been sent. A training advisor will be in touch with you shortly.',
-      });
-    } catch (error) {
-      console.error('Failed to submit training request:', error);
-      setStatus({ type: 'error', message: 'We could not submit your request. Please try again or reach out to us on WhatsApp.' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const isEnrollment = type === 'enrollment';
-
-  return (
-    <div className="sds-training-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget && !submitting) onClose(); }}>
-      <section className="sds-training-dialog sds-skills-dialog" role="dialog" aria-modal="true" aria-labelledby="training-request-title">
-        <div className="sds-training-dialog__heading sds-skills-dialog__heading">
-          <div>
-            <p className="sds-eyebrow sds-eyebrow--skills">{isEnrollment ? 'ENROLMENT APPLICATION' : 'PROGRAMME ENQUIRY'}</p>
-            <h2 id="training-request-title">{isEnrollment ? 'Enrol in Cohort' : 'Ask an Advisor'}</h2>
-            <p className="sds-skills-dialog__prog">{program.title}</p>
-          </div>
-          <button type="button" className="sds-training-dialog__close" onClick={onClose} disabled={submitting} aria-label="Close form">
-            <X size={20} aria-hidden="true" />
-          </button>
-        </div>
-        <form className="sds-training-form" onSubmit={submitRequest}>
-          <label><span>Full name</span><input name="name" autoComplete="name" maxLength={120} required value={values.name} onChange={updateValue} placeholder="e.g. Kondwani Phiri" /></label>
-          <label><span>Email address</span><input name="email" type="email" autoComplete="email" maxLength={254} required value={values.email} onChange={updateValue} placeholder="e.g. kondwani@example.com" /></label>
-          <label><span>Phone number (WhatsApp)</span><input name="phone" type="tel" autoComplete="tel" maxLength={24} required value={values.phone} onChange={updateValue} placeholder="e.g. +265 997 473 256" /></label>
-          <label><span>{isEnrollment ? 'Sponsor / Company (optional)' : 'What would you like to know? (optional)'}</span><textarea name="note" rows={3} maxLength={2000} value={values.note} onChange={updateValue} placeholder={isEnrollment ? 'Self-funded or employer sponsored...' : 'Questions on schedule, prerequisites or fees...'} /></label>
-          {status.message && <p className={`sds-training-form__status${status.type === 'error' ? ' is-error' : ''}`} role={status.type === 'error' ? 'alert' : 'status'}>{status.type === 'error' && <AlertCircle size={16} aria-hidden="true" />}{status.message}</p>}
-          {status.type === 'success' ? (
-            <button type="button" className="sds-button sds-button--skills" onClick={onClose}>Done</button>
-          ) : (
-            <button type="submit" className="sds-button sds-button--skills" disabled={submitting}>
-              {submitting ? <Loader2 className="sds-training-spin" size={17} /> : <Send size={16} aria-hidden="true" />}
-              {submitting ? 'Submitting Application…' : isEnrollment ? 'Submit Enrolment Request' : 'Send Enquiry'}
-            </button>
-          )}
-        </form>
-      </section>
-    </div>
-  );
-}
-
-function ProgramDetailsDialog({ program, onClose, onRequest }) {
-  const closeButtonRef = useRef(null);
-  const dialogRef = useRef(null);
-  const titleId = `training-program-title-${program.id}`;
-
-  useEffect(() => {
-    const previousFocus = document.activeElement;
-    closeButtonRef.current?.focus();
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        onClose();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-
-      const focusable = dialogRef.current?.querySelectorAll('button:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])');
-      if (!focusable?.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      if (previousFocus instanceof HTMLElement) previousFocus.focus();
-    };
-  }, [onClose]);
-
-  const startDate = formatDate(program.startDate);
-  const endDate = formatDate(program.endDate);
-  const dateLabel = startDate && endDate && startDate !== endDate
-    ? `${startDate} – ${endDate}`
-    : startDate || 'Next Cohort To Be Announced';
-
-  return (
-    <div className="sds-training-dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section ref={dialogRef} className="sds-training-dialog sds-training-details sds-skills-dialog" role="dialog" aria-modal="true" aria-labelledby={titleId}>
-        <div className="sds-training-dialog__heading sds-skills-dialog__heading">
-          <div>
-            <p className="sds-eyebrow sds-eyebrow--skills">SPENFEL DIGITAL SKILLS LAB</p>
-            <h2 id={titleId}>{program.title}</h2>
-          </div>
-          <button ref={closeButtonRef} type="button" className="sds-training-dialog__close" onClick={onClose} aria-label="Close programme details">
-            <X size={20} aria-hidden="true" />
-          </button>
-        </div>
-        {program.imageUrl ? (
-          <img className="sds-training-details__image" src={program.imageUrl} alt="" />
-        ) : (
-          <div className="sds-training-details__image sds-skills-card__image--fallback" aria-hidden="true">
-            <Laptop size={36} />
-            <span>SPENFEL DIGITAL SKILLS LAB</span>
-          </div>
-        )}
-        <p className="sds-training-details__description">{program.description}</p>
-        <dl className="sds-training-card__details sds-training-details__facts">
-          <div><dt><CalendarDays size={15} aria-hidden="true" /> Dates</dt><dd>{dateLabel}</dd></div>
-          {program.schedule && <div><dt><Clock3 size={15} aria-hidden="true" /> Schedule</dt><dd>{program.schedule}</dd></div>}
-          {program.location && <div><dt><MapPin size={15} aria-hidden="true" /> Location</dt><dd>{program.location}</dd></div>}
-          <div><dt><Monitor size={15} aria-hidden="true" /> Delivery Mode</dt><dd>{deliveryLabels[program.deliveryMode] || 'Interactive Lab'}</dd></div>
-          <div><dt><Wallet size={15} aria-hidden="true" /> Investment</dt><dd>{program.fee || 'Flexible Payment Plans'}</dd></div>
-        </dl>
-        <div className="sds-training-details__actions">
-          <button type="button" className="sds-button sds-button--skills-outline" onClick={() => onRequest(program, 'enquiry')}>
-            Enquire <ArrowRight size={16} aria-hidden="true" />
-          </button>
-          <button type="button" className="sds-button sds-button--skills" onClick={() => onRequest(program, 'enrollment')}>
-            Enrol Now <ArrowRight size={16} aria-hidden="true" />
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function TrainingCard({ program, onDetails, onRequest }) {
-  const startDate = formatDate(program.startDate);
-  const endDate = formatDate(program.endDate);
-  const dateLabel = startDate && endDate && startDate !== endDate ? `${startDate} – ${endDate}` : startDate || 'Next Cohort Announced Soon';
-
-  const handleCardClick = (event) => {
-    if (event.target.closest('button.sds-training-card__action-btn, a')) return;
-    onDetails(program);
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      if (event.target.closest('button.sds-training-card__action-btn, a')) return;
-      event.preventDefault();
-      onDetails(program);
-    }
-  };
-
-  return (
-    <article
-      className="sds-training-card sds-skills-card"
-      role="button"
-      tabIndex={0}
-      aria-haspopup="dialog"
-      aria-label={`View programme details for ${program.title}`}
-      onClick={handleCardClick}
-      onKeyDown={handleKeyDown}
-    >
-      <div className="sds-training-card__image-wrap sds-skills-card__image-wrap">
-        {program.imageUrl ? (
-          <img className="sds-training-card__image" src={program.imageUrl} alt={program.title} loading="lazy" />
-        ) : (
-          <div className="sds-training-card__image sds-skills-card__image--fallback" aria-hidden="true">
-            <Laptop size={30} />
-            <span>SKILLS LAB CURRICULUM</span>
-          </div>
-        )}
-        <div className="sds-training-card__details-link sds-skills-card__details-link" aria-hidden="true">
-          <span>View Syllabus</span>
-          <ArrowRight size={14} />
-        </div>
-      </div>
-      <div className="sds-training-card__body">
-        <div className="sds-training-card__top">
-          <span className="sds-training-card__tag sds-skills-card__tag">PROFESSIONAL TRACK</span>
-          <span className="sds-training-card__delivery sds-skills-card__delivery">{deliveryLabels[program.deliveryMode] || 'Lab & Online'}</span>
-        </div>
-        <h3 className="sds-training-card__title" title={program.title}>{program.title}</h3>
-        <p className="sds-training-card__description">{program.description}</p>
-        <dl className="sds-training-card__details">
-          <div><dt><CalendarDays size={14} aria-hidden="true" /> Timeline</dt><dd>{dateLabel}</dd></div>
-          <div><dt><Wallet size={14} aria-hidden="true" /> Fee</dt><dd>{program.fee || 'Contact for details'}</dd></div>
-        </dl>
-        <div className="sds-training-card__actions">
-          <button
-            type="button"
-            className="sds-button sds-button--skills-outline sds-training-card__action-btn"
-            onClick={(event) => {
-              event.stopPropagation();
-              onRequest(program, 'enquiry');
-            }}
-          >
-            Enquire <ArrowRight size={15} aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="sds-button sds-button--skills sds-training-card__action-btn"
-            onClick={(event) => {
-              event.stopPropagation();
-              onRequest(program, 'enrollment');
-            }}
-          >
-            Enrol <ArrowRight size={15} aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </article>
-  );
-}
+const levelOptions = ['Foundation', 'Intermediate', 'Professional'];
+const deliveryOptions = ['Physical', 'Online', 'Blended'];
+const formatOptions = ['Short Course', 'Professional Programme', 'Corporate Training'];
 
 export default function TrainingPage() {
-  const [state, setState] = useState({ status: 'loading', programs: defaultTrainingPrograms, error: '' });
-  const [request, setRequest] = useState(null);
-  const [selectedProgram, setSelectedProgram] = useState(null);
+  const [courses, setCourses] = useState(defaultCourses);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
+  // Filters State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [selectedDelivery, setSelectedDelivery] = useState('all');
+  const [selectedFormat, setSelectedFormat] = useState('all');
+  const [selectedAudience, setSelectedAudience] = useState('all');
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  // Enquiry Modal
+  const [activeEnquiryCourse, setActiveEnquiryCourse] = useState(null);
+
+  const revealRef = useCardReveal();
+
+  // Firestore Real-time Subscription
   useEffect(() => {
     if (!db) {
-      setState({ status: 'ready', programs: defaultTrainingPrograms, error: '' });
+      setCourses(defaultCourses);
+      setLoading(false);
       return undefined;
     }
 
-    return onSnapshot(
-      query(collection(db, 'trainingAnnouncements'), where('published', '==', true)),
+    const q = query(collection(db, 'courses'));
+    const unsubscribe = onSnapshot(
+      q,
       (snapshot) => {
-        const livePrograms = snapshot.docs
-          .map((item) => ({ ...item.data(), id: item.id }))
-          .sort((a, b) => String(a.startDate || '').localeCompare(String(b.startDate || '')));
+        if (!snapshot.empty) {
+          const liveCourses = snapshot.docs
+            .map((docSnap) => ({ ...docSnap.data(), id: docSnap.id }))
+            .filter((c) => c.published !== false)
+            .sort((a, b) => (a.displayOrder || 99) - (b.displayOrder || 99));
 
-        setState({
-          status: 'ready',
-          programs: livePrograms.length > 0 ? livePrograms : defaultTrainingPrograms,
-          error: '',
-        });
+          setCourses(liveCourses.length > 0 ? liveCourses : defaultCourses);
+        } else {
+          setCourses(defaultCourses);
+        }
+        setLoading(false);
       },
-      (error) => {
-        console.error('Failed to load training announcements:', error);
-        setState({ status: 'ready', programs: defaultTrainingPrograms, error: '' });
-      },
+      (err) => {
+        console.error('Firestore courses subscription error:', err);
+        setCourses(defaultCourses);
+        setLoading(false);
+      }
     );
+
+    return () => unsubscribe();
   }, []);
 
+  // Sync category from URL search params if present
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('category');
+    if (cat && courseCategories.some((c) => c.id === cat)) {
+      setSelectedCategory(cat);
+    }
+  }, []);
+
+  // Clear all filters
+  const resetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+    setSelectedLevel('all');
+    setSelectedDelivery('all');
+    setSelectedFormat('all');
+    setSelectedAudience('all');
+  };
+
+  // Active Filter Count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedCategory !== 'all') count++;
+    if (selectedLevel !== 'all') count++;
+    if (selectedDelivery !== 'all') count++;
+    if (selectedFormat !== 'all') count++;
+    if (selectedAudience !== 'all') count++;
+    if (searchQuery.trim()) count++;
+    return count;
+  }, [selectedCategory, selectedLevel, selectedDelivery, selectedFormat, selectedAudience, searchQuery]);
+
+  // Combined Multi-Filter Logic
+  const filteredCourses = useMemo(() => {
+    const queryTerm = searchQuery.toLowerCase().trim();
+
+    return courses.filter((course) => {
+      // 1. Search Query Matching (title, shortDescription, fullDescription, category, tools, curriculum, audience)
+      if (queryTerm) {
+        const titleMatch = course.title?.toLowerCase().includes(queryTerm);
+        const shortDescMatch = course.shortDescription?.toLowerCase().includes(queryTerm);
+        const fullDescMatch = course.fullDescription?.toLowerCase().includes(queryTerm);
+        const catMatch = course.categoryId?.toLowerCase().includes(queryTerm);
+        const toolsMatch = course.toolsAndTechnologies?.some((t) => t.toLowerCase().includes(queryTerm));
+        const audienceMatch = course.targetAudience?.some((a) => a.toLowerCase().includes(queryTerm));
+        const outcomesMatch = course.learningOutcomes?.some((o) => o.toLowerCase().includes(queryTerm));
+        const curriculumMatch = course.curriculum?.some(
+          (m) =>
+            m.module?.toLowerCase().includes(queryTerm) ||
+            m.topics?.some((topic) => topic.toLowerCase().includes(queryTerm))
+        );
+
+        if (
+          !titleMatch &&
+          !shortDescMatch &&
+          !fullDescMatch &&
+          !catMatch &&
+          !toolsMatch &&
+          !audienceMatch &&
+          !outcomesMatch &&
+          !curriculumMatch
+        ) {
+          return false;
+        }
+      }
+
+      // 2. Category Filter
+      if (selectedCategory !== 'all' && course.categoryId !== selectedCategory) {
+        return false;
+      }
+
+      // 3. Level Filter
+      if (selectedLevel !== 'all' && course.level !== selectedLevel) {
+        return false;
+      }
+
+      // 4. Delivery Mode Filter
+      if (selectedDelivery !== 'all' && course.deliveryMode !== selectedDelivery) {
+        return false;
+      }
+
+      // 5. Course Format Filter
+      if (selectedFormat !== 'all' && course.courseFormat !== selectedFormat) {
+        return false;
+      }
+
+      // 6. Target Audience Filter
+      if (selectedAudience !== 'all') {
+        if (!course.targetAudience?.includes(selectedAudience)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [courses, searchQuery, selectedCategory, selectedLevel, selectedDelivery, selectedFormat, selectedAudience]);
+
   return (
-    <div className="sds-training-page sds-skills-page">
+    <div className="sds-site sds-skills-page" ref={revealRef}>
       {/* Top Skills Ribbon */}
       <div className="sds-skills-ribbon" role="region" aria-label="Skills Lab Division">
         <div className="sds-container sds-skills-ribbon__inner">
@@ -331,70 +213,377 @@ export default function TrainingPage() {
         <div className="sds-container">
           <div className="sds-skills-badge">
             <span className="sds-skills-badge__dot" aria-hidden="true" />
-            <span>PRACTICAL TECHNOLOGY EDUCATION &amp; WORKFORCE UPSKILLING</span>
+            <span>PRACTICAL TECHNOLOGY EDUCATION &amp; CAREER DEVELOPMENT</span>
           </div>
 
           <h1>
-            Building Malawi’s Technical Workforce.<br />
-            <em className="sds-skills-em">Practical Skills for Real Impact.</em>
+            Build Practical Digital Skills for the <span className="sds-skills-em">Modern World.</span>
           </h1>
 
-          <p>
-            Through <strong>SpenFel Digital Skills Lab</strong>, we bridge the gap between academic theory and real-world technology delivery. We provide hands-on software development bootcamps, applied AI &amp; IoT systems, and tailored institutional capacity training for organizations across Malawi.
+          <p className="sds-skills-hero__lead">
+            Gain practical technology, business and professional skills through hands-on training designed to prepare individuals and organisations for today&apos;s digital economy and tomorrow&apos;s opportunities.
           </p>
 
+          <div className="sds-skills-hero__meta-audience">
+            <span>Serving:</span>
+            <strong>Students &amp; Graduates</strong> &bull;
+            <strong>Job Seekers</strong> &bull;
+            <strong>Professionals</strong> &bull;
+            <strong>Entrepreneurs</strong> &bull;
+            <strong>Institutions &amp; NGOs</strong>
+          </div>
+
           <div className="sds-training-hero__actions">
-            <a href="#training-catalogue" className="sds-button sds-button--skills">
-              Browse Programme Catalogue <ArrowRight size={16} aria-hidden="true" />
+            <a href="#course-catalogue" className="sds-button sds-button--skills">
+              Explore Courses <ArrowRight size={16} aria-hidden="true" />
             </a>
             <a href="#institutional-training" className="sds-button sds-button--skills-outline">
-              Request Institutional Training <Users size={16} aria-hidden="true" />
+              Enquire About Training <Users size={16} aria-hidden="true" />
             </a>
-            <a href="/stem-robotics-education" className="sds-button sds-button--skills-ghost">
-              <Sparkles size={14} aria-hidden="true" /> Looking for STEM &amp; Robotics for Schools? →
+            <a
+              href="https://wa.me/265997473256?text=Hello%20SpenFel%20Skills%20Lab,%20I%20would%20like%20to%20enquire%20about%20your%20upcoming%20training%20courses."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sds-button sds-button--skills-ghost"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <MessageCircle size={15} style={{ color: '#25d366' }} /> Chat on WhatsApp
             </a>
           </div>
         </div>
       </section>
 
-      {/* Programme Catalogue Section */}
-      <section id="training-catalogue" className="sds-training-list sds-container" aria-labelledby="training-list-title">
-        <div className="sds-training-list__heading">
-          <div>
-            <p className="sds-eyebrow sds-eyebrow--skills">UPCOMING &amp; ACTIVE COHORTS</p>
-            <h2 id="training-list-title">Skills Lab Programmes</h2>
-          </div>
-          {state.programs.length > 0 && (
-            <span className="sds-training-count sds-skills-count">
-              {state.programs.length} {state.programs.length === 1 ? 'programme' : 'programmes'} available
-            </span>
-          )}
-        </div>
+      {/* Course Catalogue Section */}
+      <section id="course-catalogue" className="sds-catalogue-section sds-section" aria-labelledby="catalogue-heading">
+        <div className="sds-container">
+          <div className="sds-catalogue-header" data-card-reveal>
+            <div>
+              <p className="sds-eyebrow sds-eyebrow--skills">STRUCTURED COURSE CATALOGUE</p>
+              <h2 id="catalogue-heading">Professional Digital Courses</h2>
+              <p className="sds-catalogue-header__sub">
+                Explore our accredited curriculum pathways designed for job readiness, organizational productivity, and technical excellence.
+              </p>
+            </div>
 
-        {state.status === 'loading' && (
-          <div className="sds-training-state" role="status">
-            <Loader2 className="sds-training-spin" size={20} /> Loading training programmes…
+            {/* Mobile Filter Toggle */}
+            <button
+              type="button"
+              className="sds-mobile-filter-trigger"
+              onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+              aria-expanded={mobileFilterOpen}
+              aria-controls="catalogue-filters"
+            >
+              <Filter size={16} />
+              <span>Filters {activeFilterCount > 0 && `(${activeFilterCount})`}</span>
+            </button>
           </div>
-        )}
 
-        {state.programs.length > 0 && (
-          <div className="sds-training-grid">
-            {state.programs.map((program) => (
-              <TrainingCard
-                key={program.id}
-                program={program}
-                onDetails={setSelectedProgram}
-                onRequest={(selectedProgram, type) => setRequest({ program: selectedProgram, type })}
+          {/* Search Bar */}
+          <div className="sds-catalogue-search-bar" data-card-reveal>
+            <div className="sds-search-input-wrap">
+              <Search size={18} className="sds-search-icon" aria-hidden="true" />
+              <input
+                type="search"
+                className="sds-search-input"
+                placeholder="Search by course name, topic, technology (e.g. Excel, Python, AI, GIS, Networking)..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search courses"
               />
-            ))}
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="sds-search-clear"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search text"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Category Quick Tabs Bar */}
+            <div className="sds-category-tabs" role="tablist" aria-label="Course categories">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={selectedCategory === 'all'}
+                className={`sds-cat-tab ${selectedCategory === 'all' ? 'is-active' : ''}`}
+                onClick={() => setSelectedCategory('all')}
+              >
+                All Categories ({courses.length})
+              </button>
+              {courseCategories.map((cat) => {
+                const count = courses.filter((c) => c.categoryId === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={selectedCategory === cat.id}
+                    className={`sds-cat-tab ${selectedCategory === cat.id ? 'is-active' : ''}`}
+                    onClick={() => setSelectedCategory(cat.id)}
+                  >
+                    {cat.shortName} <span className="sds-cat-tab__count">{count}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
+
+          {/* Catalogue Main Layout: Filters Sidebar & Courses Grid */}
+          <div className="sds-catalogue-layout">
+            {/* Filter Sidebar */}
+            <aside
+              id="catalogue-filters"
+              className={`sds-catalogue-sidebar ${mobileFilterOpen ? 'is-open' : ''}`}
+              aria-label="Catalogue filters"
+            >
+              <div className="sds-sidebar-header">
+                <h3>Filter Courses</h3>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {activeFilterCount > 0 && (
+                    <button type="button" className="sds-reset-btn" onClick={resetFilters}>
+                      <RotateCcw size={12} /> Reset
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="sds-sidebar-close"
+                    onClick={() => setMobileFilterOpen(false)}
+                    aria-label="Close filters"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* 1. Category Filter Dropdown / List */}
+              <div className="sds-filter-group">
+                <label className="sds-filter-label" htmlFor="filter-category">Category</label>
+                <select
+                  id="filter-category"
+                  className="sds-filter-select"
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                >
+                  <option value="all">All Categories</option>
+                  {courseCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 2. Skill Level Filter */}
+              <div className="sds-filter-group">
+                <label className="sds-filter-label">Skill Level</label>
+                <div className="sds-filter-options">
+                  <label className="sds-filter-radio">
+                    <input
+                      type="radio"
+                      name="filterLevel"
+                      checked={selectedLevel === 'all'}
+                      onChange={() => setSelectedLevel('all')}
+                    />
+                    <span>All Levels</span>
+                  </label>
+                  {levelOptions.map((level) => (
+                    <label key={level} className="sds-filter-radio">
+                      <input
+                        type="radio"
+                        name="filterLevel"
+                        checked={selectedLevel === level}
+                        onChange={() => setSelectedLevel(level)}
+                      />
+                      <span>{level}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Delivery Mode Filter */}
+              <div className="sds-filter-group">
+                <label className="sds-filter-label">Delivery Mode</label>
+                <div className="sds-filter-options">
+                  <label className="sds-filter-radio">
+                    <input
+                      type="radio"
+                      name="filterDelivery"
+                      checked={selectedDelivery === 'all'}
+                      onChange={() => setSelectedDelivery('all')}
+                    />
+                    <span>All Modes</span>
+                  </label>
+                  {deliveryOptions.map((mode) => (
+                    <label key={mode} className="sds-filter-radio">
+                      <input
+                        type="radio"
+                        name="filterDelivery"
+                        checked={selectedDelivery === mode}
+                        onChange={() => setSelectedDelivery(mode)}
+                      />
+                      <span>{mode}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* 4. Course Format Filter */}
+              <div className="sds-filter-group">
+                <label className="sds-filter-label">Course Format</label>
+                <select
+                  className="sds-filter-select"
+                  value={selectedFormat}
+                  onChange={(e) => setSelectedFormat(e.target.value)}
+                >
+                  <option value="all">All Formats</option>
+                  {formatOptions.map((fmt) => (
+                    <option key={fmt} value={fmt}>
+                      {fmt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 5. Target Audience Filter */}
+              <div className="sds-filter-group">
+                <label className="sds-filter-label">Target Audience</label>
+                <select
+                  className="sds-filter-select"
+                  value={selectedAudience}
+                  onChange={(e) => setSelectedAudience(e.target.value)}
+                >
+                  <option value="all">All Audiences</option>
+                  {audienceOptions.map((aud) => (
+                    <option key={aud} value={aud}>
+                      {aud}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {activeFilterCount > 0 && (
+                <button
+                  type="button"
+                  className="sds-button sds-button--skills-outline"
+                  style={{ width: '100%', marginTop: '16px', justifyContent: 'center' }}
+                  onClick={resetFilters}
+                >
+                  Clear All Filters ({activeFilterCount})
+                </button>
+              )}
+            </aside>
+
+            {/* Results Grid Content */}
+            <main className="sds-catalogue-results">
+              {/* Active Filter Chips & Result Counter */}
+              <div className="sds-results-meta">
+                <span className="sds-results-count">
+                  Showing <strong>{filteredCourses.length}</strong> of {courses.length} courses
+                </span>
+
+                {activeFilterCount > 0 && (
+                  <div className="sds-active-chips">
+                    {selectedCategory !== 'all' && (
+                      <span className="sds-active-chip">
+                        {courseCategories.find((c) => c.id === selectedCategory)?.shortName || selectedCategory}
+                        <button type="button" onClick={() => setSelectedCategory('all')} aria-label="Remove category filter">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {selectedLevel !== 'all' && (
+                      <span className="sds-active-chip">
+                        {selectedLevel}
+                        <button type="button" onClick={() => setSelectedLevel('all')} aria-label="Remove level filter">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {selectedDelivery !== 'all' && (
+                      <span className="sds-active-chip">
+                        {selectedDelivery}
+                        <button type="button" onClick={() => setSelectedDelivery('all')} aria-label="Remove delivery filter">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {selectedFormat !== 'all' && (
+                      <span className="sds-active-chip">
+                        {selectedFormat}
+                        <button type="button" onClick={() => setSelectedFormat('all')} aria-label="Remove format filter">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {selectedAudience !== 'all' && (
+                      <span className="sds-active-chip">
+                        {selectedAudience}
+                        <button type="button" onClick={() => setSelectedAudience('all')} aria-label="Remove audience filter">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    {searchQuery && (
+                      <span className="sds-active-chip">
+                        &ldquo;{searchQuery}&rdquo;
+                        <button type="button" onClick={() => setSearchQuery('')} aria-label="Remove search term">
+                          <X size={12} />
+                        </button>
+                      </span>
+                    )}
+                    <button type="button" className="sds-clear-all-text" onClick={resetFilters}>
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Loading State */}
+              {loading && (
+                <div className="sds-training-state" role="status">
+                  <Loader2 className="sds-training-spin" size={24} />
+                  <span>Loading course catalogue…</span>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!loading && filteredCourses.length === 0 && (
+                <div className="sds-catalogue-empty" role="region" aria-label="No courses matched">
+                  <BookOpen size={42} style={{ color: '#2563eb', margin: '0 auto 14px' }} />
+                  <h3>No Courses Matched Your Criteria</h3>
+                  <p>
+                    We couldn&apos;t find any courses matching your combination of filters and search term. Try adjusting your criteria or clearing filters.
+                  </p>
+                  <button type="button" className="sds-button sds-button--skills" onClick={resetFilters}>
+                    <RotateCcw size={15} /> Reset All Filters
+                  </button>
+                </div>
+              )}
+
+              {/* Courses Grid */}
+              {!loading && filteredCourses.length > 0 && (
+                <div className="sds-courses-grid">
+                  {filteredCourses.map((course) => (
+                    <CourseCard
+                      key={course.id || course.slug}
+                      course={course}
+                      onEnquire={(c) => setActiveEnquiryCourse(c)}
+                    />
+                  ))}
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
       </section>
 
       {/* Institutional Training & Workforce Upskilling Callout */}
       <section id="institutional-training" className="sds-skills-institutional-section sds-section">
         <div className="sds-container">
-          <div className="sds-skills-inst-card">
+          <div className="sds-skills-inst-card" data-card-reveal>
             <div className="sds-skills-inst-card__copy">
               <span className="sds-skills-badge sds-skills-badge--light">INSTITUTIONAL PARTNERSHIPS</span>
               <h2>Custom Tech Training for Your Organisation or Team</h2>
@@ -428,22 +617,12 @@ export default function TrainingPage() {
         </div>
       </section>
 
-      {selectedProgram && (
-        <ProgramDetailsDialog
-          program={selectedProgram}
-          onClose={() => setSelectedProgram(null)}
-          onRequest={(program, type) => {
-            setSelectedProgram(null);
-            setRequest({ program, type });
-          }}
-        />
-      )}
-
-      {request && (
-        <TrainingRequestDialog
-          program={request.program}
-          type={request.type}
-          onClose={() => setRequest(null)}
+      {/* Course Enquiry Modal */}
+      {activeEnquiryCourse && (
+        <CourseEnquiryModal
+          course={activeEnquiryCourse}
+          isOpen={Boolean(activeEnquiryCourse)}
+          onClose={() => setActiveEnquiryCourse(null)}
         />
       )}
     </div>
