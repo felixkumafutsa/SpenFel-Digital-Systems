@@ -21,23 +21,23 @@ const Hero = ({ onGetStarted }) => {
           transition={{ duration: 0.65 }}
           className="sds-hero__copy"
         >
-          <p className="sds-eyebrow"><span aria-hidden="true" /> Technology &amp; digital innovation</p>
+          <p className="sds-eyebrow"><span aria-hidden="true" /> Digital Solutions &amp; STEM Education</p>
           <h1>Engineering the <span>Digital Future.</span></h1>
-          <p className="sds-hero__lead">Intelligent Technology. <strong>Limitless Possibilities.</strong></p>
+          <p className="sds-hero__lead">Intelligent Technology. <strong>Practical Skills. Real Impact.</strong></p>
           <p className="sds-hero__description">
-            We design, develop and deploy intelligent software, connected systems and digital infrastructure that help businesses and institutions solve complex challenges and unlock new opportunities.
+            SpenFel Digital Systems builds intelligent software and connected systems for enterprises and institutions, while empowering Africa&apos;s youth with hands-on STEM, coding, robotics and AI education.
           </p>
           <div className="sds-hero__actions">
             <a className="sds-button sds-button--green" href="#services">
-              Explore our solutions <ArrowDownRight size={17} aria-hidden="true" />
+              Explore Our Digital Solutions <ArrowDownRight size={17} aria-hidden="true" />
             </a>
-            <button className="sds-button sds-button--outline" type="button" onClick={onGetStarted}>
-              Discuss a project <ArrowUpRight size={16} aria-hidden="true" />
-            </button>
+            <a className="sds-button sds-button--outline" href="/stem-robotics-education">
+              Explore STEM &amp; Robotics <ArrowUpRight size={16} aria-hidden="true" />
+            </a>
           </div>
           <div className="sds-hero__proof">
             <span className="sds-hero__proof-line" aria-hidden="true" />
-            <span>Software&nbsp; / &nbsp;AI&nbsp; / &nbsp;IoT&nbsp; / &nbsp;Infrastructure</span>
+            <span>Digital Solutions&nbsp; / &nbsp;Skills Lab&nbsp; / &nbsp;STEM &amp; Robotics Academy</span>
           </div>
         </motion.div>
 

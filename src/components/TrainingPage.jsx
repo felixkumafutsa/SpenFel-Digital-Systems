@@ -279,9 +279,17 @@ export default function TrainingPage() {
     <div className="sds-training-page">
       <section className="sds-training-hero">
         <div className="sds-container">
-          <p className="sds-eyebrow">LEARN WITH SPENFEL</p>
-          <h1>Practical skills.<br /><em>Real-world impact.</em></h1>
-          <p>Explore our training programme catalogue, ask questions, or enroll in upcoming cohorts. Click any programme to view curriculum and schedule.</p>
+          <p className="sds-eyebrow">SPENFEL DIGITAL SKILLS LAB</p>
+          <h1>Practical Digital Skills.<br /><em>Institutional Training.</em></h1>
+          <p>Through SpenFel Digital Skills Lab, we provide practical technology education, professional programming courses, applied AI &amp; IoT systems, and institutional workforce training programmes across Malawi.</p>
+          <div className="sds-training-hero__actions" style={{ marginTop: '22px', display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            <a href="/stem-robotics-education" className="sds-button sds-button--outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.3)' }}>
+              Looking for STEM &amp; Robotics for Schools? <span aria-hidden="true">→</span>
+            </a>
+            <a href="/partnerships" className="sds-button sds-button--green">
+              Institutional Training Partnerships <span aria-hidden="true">↗</span>
+            </a>
+          </div>
         </div>
       </section>
       <section className="sds-training-list sds-container" aria-labelledby="training-list-title">

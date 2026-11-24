@@ -3,8 +3,12 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { recordPageView } from './analytics';
 import Hero from './components/Hero';
 import About from './components/About';
+import StemRoboticsPreview from './components/StemRoboticsPreview';
 import Services from './components/Services';
+import InstitutionalApproach from './components/InstitutionalApproach';
 import TrainingPage from './components/TrainingPage';
+import StemRoboticsPage from './components/StemRoboticsPage';
+import PartnershipsPage from './components/PartnershipsPage';
 import Portfolio from './components/Portfolio';
 import Contact, { FloatingWhatsApp } from './components/Contact';
 import Footer from './components/Footer';
@@ -35,7 +39,8 @@ function AnalyticsTracker() {
   return null;
 }
 
-function CorporateSite({ training = false }) {
+function CorporateSite({ page = 'home' }) {
+  const { pathname, hash } = useLocation();
   const [activeModal, setActiveModal] = useState(null);
   const activeModalRef = useRef(activeModal);
   activeModalRef.current = activeModal;
@@ -45,14 +50,28 @@ function CorporateSite({ training = false }) {
   const handleModalClose = useCallback(() => setActiveModal(null), []);
 
   useEffect(() => {
-    if (training) return undefined;
+    if (hash) {
+      const element = document.getElementById(decodeURIComponent(hash.slice(1)));
+      if (element) {
+        const timer = setTimeout(() => {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }, 70);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [pathname, hash]);
+
+  useEffect(() => {
+    if (page !== 'home') return undefined;
 
     const timer = window.setTimeout(() => {
       if (activeModalRef.current === null) setActiveModal('newsletter');
     }, 120000);
 
     return () => window.clearTimeout(timer);
-  }, [training]);
+  }, [page]);
 
   return (
     <div className="sds-site">
@@ -60,13 +79,19 @@ function CorporateSite({ training = false }) {
       <RegistrationModal isOpen={activeModal === 'project'} onClose={handleModalClose} />
       <NewsletterModal isOpen={activeModal === 'newsletter'} onClose={handleModalClose} />
       <main>
-        {training ? (
+        {page === 'stem' ? (
+          <StemRoboticsPage />
+        ) : page === 'partnerships' ? (
+          <PartnershipsPage />
+        ) : page === 'training' || page === 'skills-lab' ? (
           <TrainingPage />
         ) : (
           <>
             <Hero onGetStarted={handleGetStarted} />
             <About />
+            <StemRoboticsPreview />
             <Services />
+            <InstitutionalApproach />
             <Industries />
             <Portfolio />
             <Approach />
@@ -119,8 +144,12 @@ function App() {
     <Router>
       <AnalyticsTracker />
       <Routes>
-        <Route path="/" element={<CorporateSite />} />
-        <Route path="/training" element={<CorporateSite training />} />
+        <Route path="/" element={<CorporateSite page="home" />} />
+        <Route path="/stem-robotics-education" element={<CorporateSite page="stem" />} />
+        <Route path="/stem-robotics-academy" element={<CorporateSite page="stem" />} />
+        <Route path="/partnerships" element={<CorporateSite page="partnerships" />} />
+        <Route path="/training" element={<CorporateSite page="training" />} />
+        <Route path="/digital-skills-lab" element={<CorporateSite page="skills-lab" />} />
         <Route path="/portfolio/*" element={<PortfolioSite />} />
         <Route path="/admin/*" element={<AdminApp />} />
       </Routes>

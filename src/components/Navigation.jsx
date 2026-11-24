@@ -6,11 +6,11 @@ import Logo from './Logo';
 
 const navLinks = [
   { name: 'Home', href: '#hero' },
-  { name: 'Services', href: '#services' },
-  { name: 'Training', href: '/training' },
-  { name: 'Industries', href: '#industries' },
-  { name: 'Projects', href: '#projects' },
   { name: 'About', href: '#about' },
+  { name: 'Digital Solutions', href: '#services' },
+  { name: 'STEM & Robotics', href: '/stem-robotics-education', isNew: true },
+  { name: 'Skills Lab', href: '/training' },
+  { name: 'Partnerships', href: '/partnerships' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -53,9 +53,16 @@ const Navigation = ({ onGetStarted }) => {
 
         <div className="sds-nav__desktop">
           {navLinks.map((link) => (
-            <a key={link.name} href={resolveHref(link.href)} className="sds-nav__link">{link.name}</a>
+            <a
+              key={link.name}
+              href={resolveHref(link.href)}
+              className={`sds-nav__link${pathname === link.href ? ' is-active' : ''}`}
+            >
+              {link.name}
+              {link.isNew && <span className="sds-nav__pill">Academy</span>}
+            </a>
           ))}
-          <button className="sds-nav__cta" type="button" onClick={onGetStarted}>Let&apos;s talk <span aria-hidden="true">↗</span></button>
+          <button className="sds-nav__cta" type="button" onClick={onGetStarted}>Partner With Us <span aria-hidden="true">↗</span></button>
         </div>
 
         <button
@@ -82,7 +89,11 @@ const Navigation = ({ onGetStarted }) => {
             <div className="sds-nav__mobile-inner">
               {navLinks.map((link) => (
                 <a key={link.name} href={resolveHref(link.href)} className="sds-nav__mobile-link" onClick={closeMenu}>
-                  {link.name}<span aria-hidden="true">↗</span>
+                  <span>
+                    {link.name}
+                    {link.isNew && <span className="sds-nav__mobile-pill">Academy</span>}
+                  </span>
+                  <span aria-hidden="true">↗</span>
                 </a>
               ))}
               <button
@@ -90,7 +101,7 @@ const Navigation = ({ onGetStarted }) => {
                 type="button"
                 onClick={() => { closeMenu(); onGetStarted(); }}
               >
-                Let&apos;s talk <span aria-hidden="true">↗</span>
+                Partner With Us <span aria-hidden="true">↗</span>
               </button>
             </div>
           </motion.div>

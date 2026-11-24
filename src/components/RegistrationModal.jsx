@@ -3,12 +3,14 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, X } from 'lucide-react';
 
 const services = [
+  'STEM & Robotics Academy (School / Institutional Partnership)',
+  'Digital Skills Lab Training Programme',
   'Software engineering & application development',
+  'School management systems & SaaS',
   'Artificial intelligence & data intelligence',
   'IoT & smart systems',
   'Cloud & digital infrastructure',
   'Business automation & digital transformation',
-  'Technical training, research & innovation',
   'Other',
 ];
 
