@@ -25,7 +25,6 @@ import {
   Zap,
 } from 'lucide-react';
 import useCardReveal from './useCardReveal';
-import PartnershipEnquiryForm from './PartnershipEnquiryForm';
 import {
   RoverIllustration,
   IrrigationIllustration,
@@ -334,8 +333,13 @@ export default function StemRoboticsPage() {
               We bring practical STEM education, coding, robotics and emerging technologies directly to schools and communities, helping young people develop the technical skills and creativity needed to shape the future.
             </p>
             <div className="sds-stem-hero__actions">
-              <a href="#partnership-enquiry" className="sds-button sds-button--stem">
-                Partner With Us <ArrowDownRight size={17} aria-hidden="true" />
+              <a
+                href="https://iil-iota.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sds-button sds-button--stem"
+              >
+                Visit SpenFel Skills Lab <ArrowUpRight size={17} aria-hidden="true" />
               </a>
               <a href="#learning-pathways" className="sds-button sds-button--stem-outline">
                 Explore Our Programmes <ArrowRight size={16} aria-hidden="true" />
@@ -611,7 +615,7 @@ export default function StemRoboticsPage() {
                     </div>
 
                     <a
-                      href="#partnership-enquiry"
+                      href="/#contact"
                       className="sds-button sds-button--stem-outline sds-stem-stakeholder__btn"
                     >
                       {item.ctaText} <ArrowUpRight size={16} aria-hidden="true" />
@@ -655,21 +659,29 @@ export default function StemRoboticsPage() {
         </div>
       </section>
 
-      {/* Call to Action Section with Embedded Enquiry Form */}
-      <section id="partnership-enquiry" className="sds-stem-cta-section sds-section sds-creative-cta">
+      {/* Call to Action Section */}
+      <section id="stem-cta" className="sds-stem-cta-section sds-section sds-creative-cta">
         <div className="sds-container">
           <div className="sds-stem-cta-header" data-card-reveal>
             <p className="sds-eyebrow sds-eyebrow--creative">Start the Conversation</p>
             <h2>Bring STEM, Robotics and Innovation to <em className="sds-creative-em">Your Institution.</em></h2>
             <p>
-              Whether you are a private school head seeking a flagship robotics club, an education official discussing district collaboration, or an NGO planning a funded digital inclusion project, we invite you to discuss programme implementation with our team.
+              Whether you are a private school head seeking a flagship robotics club, an education official discussing district collaboration, or an NGO planning a funded digital inclusion project, we invite you to connect directly with our leadership team.
             </p>
+            <div className="sds-stem-cta-actions" style={{ display: 'flex', gap: '14px', justifyContent: 'center', marginTop: '28px', flexWrap: 'wrap' }}>
+              <a href="/#contact" className="sds-button sds-button--stem">
+                Contact SpenFel Team <ArrowRight size={16} aria-hidden="true" />
+              </a>
+              <a
+                href="https://iil-iota.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="sds-button sds-button--stem-outline"
+              >
+                Visit SpenFel Skills Lab (Open Source) <ArrowUpRight size={16} aria-hidden="true" />
+              </a>
+            </div>
           </div>
-
-          <PartnershipEnquiryForm
-            defaultPartnershipType="School-Based STEM Club"
-            source="stem-robotics-education-page"
-          />
         </div>
       </section>
     </div>

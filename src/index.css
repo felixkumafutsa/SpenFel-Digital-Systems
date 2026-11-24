@@ -7239,18 +7239,21 @@ a.sds-contact__card:hover > svg:last-child {
   align-items: center;
   gap: 14px;
   padding: 18px 20px;
-  background: linear-gradient(135deg, #172554 0%, #1e3a8a 100%);
+  background: #0f172a !important;
   color: #fff;
-  border-bottom: 2px solid rgba(37, 99, 235, 0.3);
+  border-bottom: 2px solid #2563eb;
 }
 
-.sds-course-header--digital-productivity-workplace-skills { background: linear-gradient(135deg, #172554 0%, #1e40af 100%) !important; }
-.sds-course-header--artificial-intelligence-automation { background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%) !important; }
-.sds-course-header--data-analytics-research { background: linear-gradient(135deg, #134e4a 0%, #0f766e 100%) !important; }
-.sds-course-header--digital-business-entrepreneurship { background: linear-gradient(135deg, #78350f 0%, #b45309 100%) !important; }
-.sds-course-header--software-development-it { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%) !important; }
-.sds-course-header--cybersecurity-digital-safety { background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important; }
-.sds-course-header--emerging-technologies-digital-transformation { background: linear-gradient(135deg, #064e3b 0%, #047857 100%) !important; }
+.sds-course-header--digital-productivity-workplace-skills,
+.sds-course-header--artificial-intelligence-automation,
+.sds-course-header--data-analytics-research,
+.sds-course-header--digital-business-entrepreneurship,
+.sds-course-header--software-development-it,
+.sds-course-header--cybersecurity-digital-safety,
+.sds-course-header--emerging-technologies-digital-transformation {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%) !important;
+  border-bottom: 2px solid #2563eb !important;
+}
 
 .sds-course-card__icon-box {
   display: grid;
@@ -7416,14 +7419,50 @@ a.sds-contact__card:hover > svg:last-child {
 .sds-course-card__btn-view {
   flex: 1 1 auto;
   justify-content: center;
-  padding: 9px 14px !important;
-  font-size: 12.5px !important;
+  padding: 11px 16px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  background: #0f172a !important; /* Solid Executive Slate/Navy */
+  color: #ffffff !important;
+  border: 1px solid #0f172a !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.15);
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  transition: all .2s ease;
+}
+
+.sds-course-card__btn-view:hover {
+  background: #1e293b !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.22);
 }
 
 .sds-course-card__btn-enquire {
   flex: 0 0 auto;
-  padding: 9px 16px !important;
-  font-size: 12.5px !important;
+  padding: 11px 18px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  background: #1d4ed8 !important; /* High-contrast Executive Blue */
+  color: #ffffff !important;
+  border: 1px solid #1d4ed8 !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(29, 78, 216, 0.2);
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  cursor: pointer;
+  transition: all .2s ease;
+}
+
+.sds-course-card__btn-enquire:hover {
+  background: #1e40af !important;
+  border-color: #1e40af !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.35);
 }
 
 /* ==========================================================================

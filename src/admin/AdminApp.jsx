@@ -49,16 +49,14 @@ import {
 } from 'lucide-react';
 import { auth, db, firebaseConfigured, storage } from '../firebase';
 import { defaultProjects, defaultServices, defaultTrainingPrograms } from '../data/siteContent';
-import { defaultCourses } from '../data/coursesData';
 import './admin.css';
 
 const navigation = [
   { id: 'overview', label: 'Overview', path: '/admin', icon: LayoutDashboard },
   { id: 'messages', label: 'Messages', path: '/admin/messages', icon: MessageSquare },
   { id: 'newsletter', label: 'Newsletter', path: '/admin/newsletter', icon: Mail },
-  { id: 'courses', label: 'Course Catalogue', path: '/admin/courses', icon: BookOpen },
-  { id: 'training-programs', label: 'Training Cohorts', path: '/admin/training', icon: GraduationCap },
-  { id: 'training-requests', label: 'Training requests', path: '/admin/training-requests', icon: ClipboardList },
+  { id: 'training-programs', label: 'Course Catalogue & Cohorts', path: '/admin/training', icon: GraduationCap },
+  { id: 'training-requests', label: 'Course Enquiries', path: '/admin/training-requests', icon: ClipboardList },
   { id: 'projects', label: 'Projects', path: '/admin/projects', icon: Briefcase },
   { id: 'services', label: 'Services', path: '/admin/services', icon: Wrench },
 ];
@@ -321,7 +319,6 @@ function AdminWorkspace({ user, onSignOut, mobileNavOpen, setMobileNavOpen }) {
           {activeSection === 'overview' && <Overview />}
           {activeSection === 'messages' && <MessagesPage />}
           {activeSection === 'newsletter' && <NewsletterPage />}
-          {activeSection === 'courses' && <CollectionManager collectionName="courses" title="Courses" description="Manage the 17 professional Skills Lab courses, descriptions, curriculum, and categories." defaults={defaultCourses} />}
           {activeSection === 'training-programs' && <TrainingProgramsPage />}
           {activeSection === 'training-requests' && <TrainingRequestsPage />}
           {activeSection === 'projects' && <CollectionManager collectionName="projects" title="Projects" description="Manage the work and products shown in the public portfolio." defaults={defaultProjects} />}
@@ -949,10 +946,10 @@ function TrainingProgramsPage() {
   return (
     <>
       <PageHeading
-        eyebrow="PUBLIC CONTENT"
-        title="Training announcements"
-        description="Create programmes with cover images, publish announcements, and manage visibility on the public training catalogue."
-        action={<button className="admin-button admin-button--primary" type="button" onClick={() => openEditor()}><Plus size={17} />Add programme</button>}
+        eyebrow="SPENFEL DIGITAL SKILLS LAB"
+        title="Course Catalogue & Cohorts"
+        description="Manage the digital skills course catalogue and published cohort announcements on the website."
+        action={<button className="admin-button admin-button--primary" type="button" onClick={() => openEditor()}><Plus size={17} />Add course / cohort</button>}
       />
       {notice.message && <div className={`admin-alert ${notice.type === 'error' ? 'admin-alert--error' : 'admin-alert--success'}`} role={notice.type === 'error' ? 'alert' : 'status'}>{notice.type === 'error' ? <AlertCircle size={18} /> : <Check size={18} />}{notice.message}</div>}
       <section className="admin-panel admin-manager" aria-label="Training announcements">

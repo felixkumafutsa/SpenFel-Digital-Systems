@@ -71,28 +71,28 @@ export default function TrainingPage() {
       return undefined;
     }
 
-    const q = query(collection(db, 'courses'));
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        if (!snapshot.empty) {
-          const liveCourses = snapshot.docs
-            .map((docSnap) => ({ ...docSnap.data(), id: docSnap.id }))
-            .filter((c) => c.published !== false)
-            .sort((a, b) => (a.displayOrder || 99) - (b.displayOrder || 99));
-
-          setCourses(liveCourses.length > 0 ? liveCourses : defaultCourses);
-        } else {
+    let unsubscribe = () => {};
+    try {
+      const q = query(collection(db, 'trainingAnnouncements'));
+      unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          if (!snapshot.empty) {
+            setCourses(defaultCourses);
+          } else {
+            setCourses(defaultCourses);
+          }
+          setLoading(false);
+        },
+        () => {
           setCourses(defaultCourses);
+          setLoading(false);
         }
-        setLoading(false);
-      },
-      (err) => {
-        console.error('Firestore courses subscription error:', err);
-        setCourses(defaultCourses);
-        setLoading(false);
-      }
-    );
+      );
+    } catch {
+      setCourses(defaultCourses);
+      setLoading(false);
+    }
 
     return () => unsubscribe();
   }, []);
@@ -237,8 +237,8 @@ export default function TrainingPage() {
             <a href="#course-catalogue" className="sds-button sds-button--skills">
               Explore Courses <ArrowRight size={16} aria-hidden="true" />
             </a>
-            <a href="#institutional-training" className="sds-button sds-button--skills-outline">
-              Enquire About Training <Users size={16} aria-hidden="true" />
+            <a href="/#contact" className="sds-button sds-button--skills-outline">
+              Contact Us <ArrowUpRight size={15} aria-hidden="true" />
             </a>
             <a
               href="https://wa.me/265997473256?text=Hello%20SpenFel%20Skills%20Lab,%20I%20would%20like%20to%20enquire%20about%20your%20upcoming%20training%20courses."
@@ -576,43 +576,6 @@ export default function TrainingPage() {
                 </div>
               )}
             </main>
-          </div>
-        </div>
-      </section>
-
-      {/* Institutional Training & Workforce Upskilling Callout */}
-      <section id="institutional-training" className="sds-skills-institutional-section sds-section">
-        <div className="sds-container">
-          <div className="sds-skills-inst-card" data-card-reveal>
-            <div className="sds-skills-inst-card__copy">
-              <span className="sds-skills-badge sds-skills-badge--light">INSTITUTIONAL PARTNERSHIPS</span>
-              <h2>Custom Tech Training for Your Organisation or Team</h2>
-              <p>
-                Does your business, NGO, bank, or government agency need to train staff in modern software tools, workflow automation, cloud systems, or cybersecurity awareness? We design and deliver custom, on-premise or virtual training cohorts tailored to your exact tech stack and operational goals.
-              </p>
-              <div className="sds-skills-inst-benefits">
-                <div><CheckCircle2 size={16} aria-hidden="true" /> <span>Tailored curriculum aligned to your business workflows</span></div>
-                <div><CheckCircle2 size={16} aria-hidden="true" /> <span>Hands-on project deliverables built during training</span></div>
-                <div><CheckCircle2 size={16} aria-hidden="true" /> <span>Flexible on-site, hybrid, or evening executive delivery</span></div>
-                <div><CheckCircle2 size={16} aria-hidden="true" /> <span>Certificate of completion and post-training mentoring</span></div>
-              </div>
-              <div className="sds-skills-inst-actions">
-                <a
-                  href="/stem-robotics-education#partnership-enquiry"
-                  className="sds-button sds-button--skills"
-                >
-                  Request Institutional Training Proposal <ArrowUpRight size={16} aria-hidden="true" />
-                </a>
-                <a
-                  href="https://wa.me/265997473256?text=Hello%20SpenFel%20team,%20we%20are%20interested%20in%20discussing%20custom%20institutional%20training%20for%20our%20organisation."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="sds-button sds-button--skills-outline"
-                >
-                  Chat with a Training Advisor <ArrowUpRight size={15} aria-hidden="true" />
-                </a>
-              </div>
-            </div>
           </div>
         </div>
       </section>

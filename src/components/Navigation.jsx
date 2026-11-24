@@ -61,7 +61,7 @@ const Navigation = ({ onGetStarted }) => {
               {link.isNew && <span className="sds-nav__pill">Academy</span>}
             </a>
           ))}
-          <a className="sds-nav__cta" href="/stem-robotics-education#partnership-enquiry">Partner With Us <span aria-hidden="true">↗</span></a>
+          <a className="sds-nav__cta" href={resolveHref('#contact')}>Contact Us <span aria-hidden="true">↗</span></a>
         </div>
 
         <button
@@ -97,10 +97,10 @@ const Navigation = ({ onGetStarted }) => {
               ))}
               <a
                 className="sds-nav__mobile-cta"
-                href="/stem-robotics-education#partnership-enquiry"
+                href={resolveHref('#contact')}
                 onClick={closeMenu}
               >
-                Partner With Us <span aria-hidden="true">↗</span>
+                Contact Us <span aria-hidden="true">↗</span>
               </a>
             </div>
           </motion.div>

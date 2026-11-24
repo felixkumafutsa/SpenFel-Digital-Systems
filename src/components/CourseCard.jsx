@@ -89,13 +89,13 @@ export default function CourseCard({ course, onEnquire }) {
         <div className="sds-course-card__actions">
           <a
             href={`/skills-lab/courses/${course.slug}`}
-            className="sds-button sds-button--skills-outline sds-course-card__btn-view"
+            className="sds-button sds-course-card__btn-view"
           >
-            View Details <ArrowRight size={14} aria-hidden="true" />
+            View Course Details <ArrowRight size={14} aria-hidden="true" />
           </a>
           <button
             type="button"
-            className="sds-button sds-button--skills sds-course-card__btn-enquire"
+            className="sds-button sds-course-card__btn-enquire"
             onClick={() => onEnquire(course)}
           >
             Enquire

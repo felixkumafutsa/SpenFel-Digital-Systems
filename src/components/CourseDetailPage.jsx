@@ -61,13 +61,13 @@ export default function CourseDetailPage() {
 
       if (db && slug) {
         try {
-          const docRef = doc(db, 'courses', slug);
+          const docRef = doc(db, 'trainingAnnouncements', slug);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists() && isMounted) {
             setCourse({ ...docSnap.data(), id: docSnap.id });
           }
-        } catch (err) {
-          console.error('Error fetching course from Firestore:', err);
+        } catch {
+          // Gracefully retain static course catalogue
         }
       }
 
